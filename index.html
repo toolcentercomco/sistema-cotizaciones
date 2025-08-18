@@ -2315,46 +2315,40 @@
         </div>
 
         <!-- MENU GRID -->
-        <div id="menuScreen">
-            <div class="menu-grid">
-                <div class="menu-item" onclick="showClientes()">
-                    <div class="icon">馃懃</div>
-                    <div class="title">Clientes</div>
-                    <div class="description">Gestionar informaci贸n de clientes y zonas</div>
-                </div>
-
-                <div class="menu-item" onclick="showProductos()">
-                    <div class="icon">馃摝</div>
-                    <div class="title">Productos</div>
-                    <div class="description">Cat谩logo de productos y control de stock</div>
-                </div>
-
-                <div class="menu-item" onclick="showEntradas()">
-                    <div class="icon">馃搵</div>
-                    <div class="title">Entradas</div>
-                    <div class="description">Registro de entradas y devoluciones</div>
-                </div>
-
-                <div class="menu-item" onclick="showCotizaciones()">
-                    <div class="icon">馃挵</div>
-                    <div class="title">Cotizaciones</div>
-                    <div class="description">Crear y gestionar cotizaciones</div>
-                </div>
-
-                <div class="menu-item" onclick="showParametros()">
-                    <div class="icon">鈿欙笍</div>
-                    <div class="title">Par谩metros</div>
-                    <div class="description">Configuraci贸n del sistema y empresa</div>
-                </div>
-
-                <div class="menu-item" onclick="showInformes()">
-                    <div class="icon">馃搳</div>
-                    <div class="title">Informes</div>
-                    <div class="description">Reportes y estad铆sticas</div>
-                </div>
-            </div>
+<div id="menuScreen">
+    <div class="menu-grid">
+        <div class="menu-item" onclick="showClientes()">
+            <div class="icon">👥</div>
+            <div class="title">Clientes</div>
+            <div class="description">Gestionar información de clientes y zonas</div>
         </div>
-
+        <div class="menu-item" onclick="showProductos()">
+            <div class="icon">📦</div>
+            <div class="title">Productos</div>
+            <div class="description">Catálogo de productos y control de stock</div>
+        </div>
+        <div class="menu-item" onclick="showEntradas()">
+            <div class="icon">📋</div>
+            <div class="title">Entradas</div>
+            <div class="description">Registro de entradas y devoluciones</div>
+        </div>
+        <div class="menu-item" onclick="showCotizaciones()">
+            <div class="icon">💰</div>
+            <div class="title">Cotizaciones</div>
+            <div class="description">Crear y gestionar cotizaciones</div>
+        </div>
+        <div class="menu-item" onclick="showParametros()">
+            <div class="icon">⚙️</div>
+            <div class="title">Parámetros</div>
+            <div class="description">Configuración del sistema y empresa</div>
+        </div>
+        <div class="menu-item" onclick="showInformes()">
+            <div class="icon">📊</div>
+            <div class="title">Informes</div>
+            <div class="description">Reportes y estadísticas</div>
+        </div>
+    </div>
+</div>
         <!-- CONTENT AREA (for modules) -->
         <div id="contentArea" class="content-area">
             <div class="content-header">
@@ -4571,11 +4565,13 @@
             `;
             
             // Cargar jsPDF din谩micamente
-            if (!window.jsPDF) {
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-                document.head.appendChild(script);
-            }
+            // Cargar jsPDF dinámicamente
+if (!window.jsPDF) {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    script.onerror = () => console.error('Error cargando jsPDF');
+    document.head.appendChild(script);
+}
             
             // Funciones del m贸dulo
             window.openCotizacionModal = function() {
