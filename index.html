@@ -4886,121 +4886,112 @@
                 showNotification('Funci贸n de edici贸n en desarrollo', 'info');
             };
             
-         window.generatePDF = async function(consecutivo) {
-    try {
-        // Verificaciones previas de jsPDF (como en el código anterior)
-
-        const cotizacion = cotizacionesList.find(c => c.consecutivo === consecutivo);
-        if (!cotizacion) return;
-
-        // Cargar detalles de la cotización
-        const detalles = await loadCotizacionDetalles(cotizacion.id_cotizacion);
-
-        // Crear documento PDF
-        const doc = new jsPDF();
-
-        // Agregar logo si existe
-        if (parametrosEmpresa?.logo_empresa) {
-            try {
-                const logoImg = await loadBase64Image(parametrosEmpresa.logo_empresa);
-                const canvas = document.createElement('canvas');
-                canvas.width = logoImg.width;
-                canvas.height = logoImg.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(logoImg, 0, 0);
-                const resizedLogo = canvas.toDataURL('image/jpeg', 0.5);
-                
-                doc.addImage(resizedLogo, 'JPEG', 10, 10, 40, 40);
-            } catch (logoError) {
-                console.warn('Error procesando logo:', logoError);
-            }
-        }
-
-        // Resto de la generación de PDF (como estaba en tu código original)
-        doc.setFont('helvetica');
-        doc.setFontSize(20);
-        doc.text('COTIZACIóN', 105, 60, { align: 'center' });
-
-        // Información de empresa
-        doc.setFontSize(12);
-        doc.text(parametrosEmpresa?.nombre_empresa || 'Tool Center', 20, 80);
-        doc.text(`Ibagué, ${formatDate(cotizacion.fecha_hora)}`, 20, 90);
-
-        // Número de cotización
-        doc.setFontSize(14);
-        doc.setTextColor(0, 100, 200);
-        doc.text(`${consecutivo}`, 150, 80);
-
-        // Información del cliente
-        doc.setFontSize(12);
-        doc.setTextColor(40, 40, 40);
-        doc.text(`Se?or(a): ${cotizacion.nombre_cliente}`, 20, 110);
-        doc.text('Cordial saludo', 20, 125);
-        doc.text('Anexo cotización según lista:', 20, 140);
-
-        // Tabla de productos (resto del código como estaba)
-        let yPosition = 160;
-        
-        // Headers
-        doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100);
-        doc.text('PRODUCTO', 20, yPosition);
-        doc.text('CANT.', 120, yPosition);
-        doc.text('VALOR UNIT.', 140, yPosition);
-        doc.text('SUBTOTAL', 170, yPosition);
-        
-        yPosition += 10;
-        
-        // Productos
-        doc.setFontSize(9);
-        doc.setTextColor(40, 40, 40);
-        
-        for (const detalle of detalles) {
-            if (yPosition > 250) {
-                doc.addPage();
-                yPosition = 30;
-            }
+            window.generatePDF = async function(consecutivo) {
+                try {
+                    if (!window.jsPDF) {
+                        showNotification('Cargando generador de PDF...', 'info');
+                        return;
+                    }
+                    
+                    const cotizacion = cotizacionesList.find(c => c.consecutivo === consecutivo);
+                    if (!cotizacion) return;
+                    
+                    // Cargar detalles de la cotizaci贸n
+                    const detalles = await loadCotizacionDetalles(cotizacion.id_cotizacion);
+                    
+                    // Generar PDF
+                    const { jsPDF } = window.jsPDF;
+                    const doc = new jsPDF();
+                    
+                    // Configurar fuente
+                    doc.setFont('helvetica');
+                    
+                    // Header con logo (si existe)
+                    if (parametrosEmpresa?.logo_empresa) {
+                        try {
+                            doc.addImage(parametrosEmpresa.logo_empresa, 'JPEG', 85, 10, 40, 40);
+                        } catch (e) {
+                            console.log('Error agregando logo');
+                        }
+                    }
+                    
+                    // T铆tulo
+                    doc.setFontSize(20);
+                    doc.setTextColor(40, 40, 40);
+                    doc.text('COTIZACI脫N', 105, 60, { align: 'center' });
+                    
+                    // Informaci贸n de empresa
+                    doc.setFontSize(12);
+                    doc.text(parametrosEmpresa?.nombre_empresa || 'Tool Center', 20, 80);
+                    doc.text(`Ibagu茅, ${formatDate(cotizacion.fecha_hora)}`, 20, 90);
+                    
+                    // N煤mero de cotizaci贸n
+                    doc.setFontSize(14);
+                    doc.setTextColor(0, 100, 200);
+                    doc.text(`${consecutivo}`, 150, 80);
+                    
+                    // Informaci贸n del cliente
+                    doc.setFontSize(12);
+                    doc.setTextColor(40, 40, 40);
+                    doc.text(`Se帽or(a): ${cotizacion.nombre_cliente}`, 20, 110);
+                    doc.text('Cordial saludo', 20, 125);
+                    doc.text('Anexo cotizaci贸n seg煤n lista:', 20, 140);
+                    
+                    // Tabla de productos
+                    let yPosition = 160;
+                    
+                    // Headers
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text('PRODUCTO', 20, yPosition);
+                    doc.text('CANT.', 120, yPosition);
+                    doc.text('VALOR UNIT.', 140, yPosition);
+                    doc.text('SUBTOTAL', 170, yPosition);
+                    
+                    yPosition += 10;
+                    
+                    // Productos
+                    doc.setFontSize(9);
+                    doc.setTextColor(40, 40, 40);
+                    
+                    for (const detalle of detalles) {
+                        if (yPosition > 250) {
+                            doc.addPage();
+                            yPosition = 30;
+                        }
+                        
+                        doc.text(detalle.nombre_producto, 20, yPosition);
+                        doc.text(detalle.cantidad.toString(), 120, yPosition);
+                        doc.text(formatCurrency(detalle.valor_unitario), 140, yPosition);
+                        doc.text(formatCurrency(detalle.subtotal), 170, yPosition);
+                        
+                        yPosition += 10;
+                    }
+                    
+                    // Total
+                    yPosition += 10;
+                    doc.setFontSize(12);
+                    doc.setTextColor(40, 40, 40);
+                    doc.text(`TOTAL: ${formatCurrency(cotizacion.total)}`, 140, yPosition);
+                    
+                    // Footer
+                    yPosition += 30;
+                    doc.setFontSize(10);
+                    doc.text('Cordialmente,', 20, yPosition);
+                    doc.text('Jorge Luis Hern谩ndez', 20, yPosition + 15);
+                    doc.text('Celular: 314 345 2032', 20, yPosition + 25);
+                    
+                    // Descargar PDF
+                    doc.save(`cotizacion_${cotizacion.nombre_cliente}_${formatDate(cotizacion.fecha_hora).replace(/\//g, '-')}.pdf`);
+                    
+                    showNotification('PDF generado correctamente', 'success');
+                    
+                } catch (error) {
+                    console.error('Error generando PDF:', error);
+                    showNotification('Error al generar PDF: ' + error.message, 'error');
+                }
+            };
             
-            doc.text(detalle.nombre_producto, 20, yPosition);
-            doc.text(detalle.cantidad.toString(), 120, yPosition);
-            doc.text(formatCurrency(detalle.valor_unitario), 140, yPosition);
-            doc.text(formatCurrency(detalle.subtotal), 170, yPosition);
-            
-            yPosition += 10;
-        }
-        
-        // Total
-        yPosition += 10;
-        doc.setFontSize(12);
-        doc.setTextColor(40, 40, 40);
-        doc.text(`TOTAL: ${formatCurrency(cotizacion.total)}`, 140, yPosition);
-        
-        // Footer
-        yPosition += 30;
-        doc.setFontSize(10);
-        doc.text('Cordialmente,', 20, yPosition);
-        doc.text('Jorge Luis Hernández', 20, yPosition + 15);
-        doc.text('Celular: 314 345 2032', 20, yPosition + 25);
-        
-        // Descargar PDF
-        doc.save(`cotizacion_${cotizacion.nombre_cliente}_${formatDate(cotizacion.fecha_hora).replace(/\//g, '-')}.pdf`);
-        
-        showNotification('PDF generado correctamente', 'success');
-        
-    } catch (error) {
-        console.error('Error generando PDF:', error);
-        showNotification('Error al generar PDF: ' + error.message, 'error');
-    }
-};  
-            
-			function loadBase64Image(base64) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = base64;
-    });
-}
             window.confirmarVenta = async function(consecutivo) {
                 const cotizacion = cotizacionesList.find(c => c.consecutivo === consecutivo);
                 if (!cotizacion) return;
