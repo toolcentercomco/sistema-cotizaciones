@@ -2278,12 +2278,12 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Contraseña</label>
+                    <label for="password">Contrase帽a</label>
                     <input type="password" id="password" class="form-control" required autocomplete="current-password">
                 </div>
                 
                 <button type="submit" id="loginBtn" class="btn">
-                    <span class="btn-text">Iniciar Sesión</span>
+                    <span class="btn-text">Iniciar Sesi贸n</span>
                     <span class="loading" style="display: none;"></span>
                 </button>
             </form>
@@ -2294,11 +2294,11 @@
     <div id="mainApp" class="menu-container">
         <!-- HEADER -->
         <div class="header">
-            <button class="logout-btn" onclick="logout()">🚪 Cerrar Sesión</button>
+            <button class="logout-btn" onclick="logout()">馃毆 Cerrar Sesi贸n</button>
             <h1>Tool Center</h1>
             <p class="subtitle">Sistema de Cotizaciones</p>
             <div class="user-info">
-                <div>👤 <span id="currentUser">Jorge Luis Hernández</span></div>
+                <div>馃懁 <span id="currentUser">Jorge Luis Hern谩ndez</span></div>
                 <div style="font-size: 12px; margin-top: 2px;">Administrador</div>
             </div>
         </div>
@@ -2307,10 +2307,10 @@
         <div class="status-bar">
             <div class="status-indicator">
                 <div class="status-dot" id="connectionDot"></div>
-                <span id="connectionStatus">En línea</span>
+                <span id="connectionStatus">En l铆nea</span>
             </div>
             <div>
-                <span id="lastSync">Última sincronización: --:--</span>
+                <span id="lastSync">脷ltima sincronizaci贸n: --:--</span>
             </div>
         </div>
 
@@ -2318,39 +2318,39 @@
         <div id="menuScreen">
             <div class="menu-grid">
                 <div class="menu-item" onclick="showClientes()">
-                    <div class="icon">👥</div>
+                    <div class="icon">馃懃</div>
                     <div class="title">Clientes</div>
-                    <div class="description">Gestionar información de clientes y zonas</div>
+                    <div class="description">Gestionar informaci贸n de clientes y zonas</div>
                 </div>
 
                 <div class="menu-item" onclick="showProductos()">
-                    <div class="icon">📦</div>
+                    <div class="icon">馃摝</div>
                     <div class="title">Productos</div>
-                    <div class="description">Catálogo de productos y control de stock</div>
+                    <div class="description">Cat谩logo de productos y control de stock</div>
                 </div>
 
                 <div class="menu-item" onclick="showEntradas()">
-                    <div class="icon">📋</div>
+                    <div class="icon">馃搵</div>
                     <div class="title">Entradas</div>
                     <div class="description">Registro de entradas y devoluciones</div>
                 </div>
 
                 <div class="menu-item" onclick="showCotizaciones()">
-                    <div class="icon">💰</div>
+                    <div class="icon">馃挵</div>
                     <div class="title">Cotizaciones</div>
                     <div class="description">Crear y gestionar cotizaciones</div>
                 </div>
 
                 <div class="menu-item" onclick="showParametros()">
-                    <div class="icon">⚙️</div>
-                    <div class="title">Parámetros</div>
-                    <div class="description">Configuración del sistema y empresa</div>
+                    <div class="icon">鈿欙笍</div>
+                    <div class="title">Par谩metros</div>
+                    <div class="description">Configuraci贸n del sistema y empresa</div>
                 </div>
 
                 <div class="menu-item" onclick="showInformes()">
-                    <div class="icon">📊</div>
+                    <div class="icon">馃搳</div>
                     <div class="title">Informes</div>
-                    <div class="description">Reportes y estadísticas</div>
+                    <div class="description">Reportes y estad铆sticas</div>
                 </div>
             </div>
         </div>
@@ -2358,8 +2358,8 @@
         <!-- CONTENT AREA (for modules) -->
         <div id="contentArea" class="content-area">
             <div class="content-header">
-                <h2 class="content-title" id="contentTitle">Módulo</h2>
-                <button class="back-btn" onclick="showMenu()">�?Volver al Menú</button>
+                <h2 class="content-title" id="contentTitle">M贸dulo</h2>
+                <button class="back-btn" onclick="showMenu()">鈫?Volver al Men煤</button>
             </div>
             <div id="contentBody">
                 <!-- Module content will be loaded here -->
@@ -2378,29 +2378,29 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN GLOBAL
+        // CONFIGURACI脫N GLOBAL
         // ============================================
         
-        // Configuración de Supabase
+        // Configuraci贸n de Supabase
         const SUPABASE_URL = 'https://nipwdvnhngdydpclvhco.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pcHdkdm5obmdkeWRwY2x2aGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzOTcxNzcsImV4cCI6MjA3MDk3MzE3N30.nMkXseYCsdh_eCfWBXBYsvzObbXjq4Uj3_sBvq2pF0E';
         
-        // Inicializar Supabase con verificación
+        // Inicializar Supabase con verificaci贸n
         let supabase = null;
         
-        // Verificar que Supabase esté disponible
+        // Verificar que Supabase est茅 disponible
         function initSupabase() {
             try {
                 if (typeof window.supabase !== 'undefined') {
                     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                    console.log('�?Supabase inicializado correctamente');
+                    console.log('鉁?Supabase inicializado correctamente');
                     return true;
                 } else {
-                    console.warn('⚠️ Supabase no disponible, modo offline');
+                    console.warn('鈿狅笍 Supabase no disponible, modo offline');
                     return false;
                 }
             } catch (error) {
-                console.warn('⚠️ Error inicializando Supabase:', error);
+                console.warn('鈿狅笍 Error inicializando Supabase:', error);
                 return false;
             }
         }
@@ -2411,11 +2411,11 @@
         let db = null; // IndexedDB instance
         
         // ============================================
-        // INICIALIZACIÓN
+        // INICIALIZACI脫N
         // ============================================
         
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🚀 Iniciando Sistema de Cotizaciones v1.0');
+            console.log('馃殌 Iniciando Sistema de Cotizaciones v1.0');
             
             // Inicializar Supabase
             const supabaseReady = initSupabase();
@@ -2429,7 +2429,7 @@
             // Configurar formulario de login
             setupLoginForm();
             
-            // Verificar sesión existente
+            // Verificar sesi贸n existente
             checkExistingSession();
             
             updateConnectionStatus();
@@ -2442,7 +2442,7 @@
         });
 
         // ============================================
-        // FUNCIONES DE AUTENTICACIÓN
+        // FUNCIONES DE AUTENTICACI脫N
         // ============================================
         
         async function validateLogin() {
@@ -2470,12 +2470,12 @@
                         throw new Error('Usuario no encontrado o inactivo');
                     }
                     
-                    // Validar contraseña (en producción debería usar hash)
+                    // Validar contrase帽a (en producci贸n deber铆a usar hash)
                     if (password !== 'Admin2025*') {
-                        throw new Error('Contraseña incorrecta');
+                        throw new Error('Contrase帽a incorrecta');
                     }
                     
-                    // Actualizar último acceso
+                    // Actualizar 煤ltimo acceso
                     await supabase
                         .from('usuarios')
                         .update({ ultimo_acceso: new Date().toISOString() })
@@ -2486,12 +2486,12 @@
                     
                     currentUser = data;
                 } else {
-                    // Validación offline con credenciales hardcodeadas
+                    // Validaci贸n offline con credenciales hardcodeadas
                     if (username === 'jhernandez' && password === 'Admin2025*') {
                         currentUser = {
                             id: 1,
                             username: 'jhernandez',
-                            nombre: 'Jorge Luis Hernández',
+                            nombre: 'Jorge Luis Hern谩ndez',
                             perfil: 'admin'
                         };
                     } else {
@@ -2499,7 +2499,7 @@
                     }
                 }
                 
-                // Guardar sesión
+                // Guardar sesi贸n
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 localStorage.setItem('loginTime', new Date().toISOString());
                 
@@ -2510,7 +2510,7 @@
                 
             } catch (error) {
                 console.error('Error en login:', error);
-                showNotification(error.message || 'Error al iniciar sesión', 'error');
+                showNotification(error.message || 'Error al iniciar sesi贸n', 'error');
                 return false;
             } finally {
                 showLoading(false);
@@ -2531,12 +2531,12 @@
         }
         
         function logout() {
-            // Registrar logout antes de limpiar sesión
+            // Registrar logout antes de limpiar sesi贸n
             if (isOnlineStatus && currentUser) {
-                registerAction('Logout', 'usuarios', currentUser.id, 'Sesión cerrada');
+                registerAction('Logout', 'usuarios', currentUser.id, 'Sesi贸n cerrada');
             }
             
-            // Limpiar sesión
+            // Limpiar sesi贸n
             localStorage.removeItem('currentUser');
             localStorage.removeItem('loginTime');
             currentUser = null;
@@ -2549,11 +2549,11 @@
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
             
-            showNotification('Sesión cerrada correctamente', 'info');
+            showNotification('Sesi贸n cerrada correctamente', 'info');
         }
 
         // ============================================
-        // FUNCIONES DE NAVEGACIÓN (MÓDULOS)
+        // FUNCIONES DE NAVEGACI脫N (M脫DULOS)
         // ============================================
         
         async function showClientes() {
@@ -2561,7 +2561,7 @@
             document.getElementById('contentArea').style.display = 'block';
             document.getElementById('contentTitle').textContent = 'Clientes';
             
-            // Variables globales del módulo
+            // Variables globales del m贸dulo
             let clientesList = [];
             let zonasList = [];
             let filteredClientes = [];
@@ -2571,7 +2571,7 @@
             document.getElementById('contentBody').innerHTML = `
                 <div class="clientes-container">
                     <div class="clientes-header">
-                        <h2>Gestión de Clientes</h2>
+                        <h2>Gesti贸n de Clientes</h2>
                         <button class="btn-nuevo" onclick="openClienteModal()">
                             <span>+ Nuevo Cliente</span>
                         </button>
@@ -2579,13 +2579,13 @@
                     
                     <div class="search-container">
                         <input type="text" id="searchClientes" class="search-input" 
-                               placeholder="🔍 Buscar por nombre o NIT..." 
+                               placeholder="馃攳 Buscar por nombre o NIT..." 
                                oninput="filterClientes()">
                     </div>
                     
                     <div id="clientesList" class="clientes-grid">
                         <div style="text-align: center; padding: 40px; color: #6b7280;">
-                            <div style="font-size: 24px; margin-bottom: 10px;">📡</div>
+                            <div style="font-size: 24px; margin-bottom: 10px;">馃摗</div>
                             <p>Cargando clientes...</p>
                         </div>
                     </div>
@@ -2629,7 +2629,7 @@
                                            placeholder="correo@empresa.com" maxlength="100">
                                 </div>
                                 <div class="form-group">
-                                    <label for="clienteCelular">Teléfono Celular</label>
+                                    <label for="clienteCelular">Tel茅fono Celular</label>
                                     <input type="tel" id="clienteCelular" class="form-control" 
                                            placeholder="3001234567" maxlength="20">
                                 </div>
@@ -2637,7 +2637,7 @@
                             
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="clienteFijo">Teléfono Fijo</label>
+                                    <label for="clienteFijo">Tel茅fono Fijo</label>
                                     <input type="tel" id="clienteFijo" class="form-control" 
                                            placeholder="2601234" maxlength="20">
                                 </div>
@@ -2651,9 +2651,9 @@
                             
                             <div class="form-row full">
                                 <div class="form-group">
-                                    <label for="clienteDireccion">Dirección</label>
+                                    <label for="clienteDireccion">Direcci贸n</label>
                                     <textarea id="clienteDireccion" class="form-control" rows="2" 
-                                              placeholder="Dirección completa" maxlength="200"></textarea>
+                                              placeholder="Direcci贸n completa" maxlength="200"></textarea>
                                 </div>
                             </div>
                             
@@ -2671,7 +2671,7 @@
                 </div>
             `;
             
-            // Funciones del módulo
+            // Funciones del m贸dulo
             window.openClienteModal = function(cliente = null) {
                 currentClienteEdit = cliente;
                 const modal = document.getElementById('modalCliente');
@@ -2762,8 +2762,8 @@
                 if (!cliente) return;
                 
                 const confirm = window.confirm(
-                    `¿Está seguro de eliminar el cliente "${cliente.nombre}"?\n\n` +
-                    'El cliente será marcado como inactivo y no se eliminará permanentemente.'
+                    `驴Est谩 seguro de eliminar el cliente "${cliente.nombre}"?\n\n` +
+                    'El cliente ser谩 marcado como inactivo y no se eliminar谩 permanentemente.'
                 );
                 
                 if (!confirm) return;
@@ -2817,19 +2817,19 @@
                 
                 // Validar formato de email
                 if (data.correo && !validateEmail(data.correo)) {
-                    return { valid: false, message: 'El formato del correo no es válido' };
+                    return { valid: false, message: 'El formato del correo no es v谩lido' };
                 }
                 
-                // Validar teléfonos
+                // Validar tel茅fonos
                 if (data.tel_celular && !validatePhone(data.tel_celular)) {
-                    return { valid: false, message: 'El teléfono celular debe contener solo números' };
+                    return { valid: false, message: 'El tel茅fono celular debe contener solo n煤meros' };
                 }
                 
                 if (data.tel_fijo && !validatePhone(data.tel_fijo)) {
-                    return { valid: false, message: 'El teléfono fijo debe contener solo números' };
+                    return { valid: false, message: 'El tel茅fono fijo debe contener solo n煤meros' };
                 }
                 
-                // Validar NIT único (solo para nuevos clientes)
+                // Validar NIT 煤nico (solo para nuevos clientes)
                 if (!isEdit) {
                     const existingCliente = clientesList.find(c => c.nit === data.nit);
                     if (existingCliente) {
@@ -2942,9 +2942,9 @@
                 if (filteredClientes.length === 0) {
                     container.innerHTML = `
                         <div class="no-results">
-                            <div class="icon">👥</div>
+                            <div class="icon">馃懃</div>
                             <h3>No se encontraron clientes</h3>
-                            <p>No hay clientes que coincidan con la búsqueda</p>
+                            <p>No hay clientes que coincidan con la b煤squeda</p>
                         </div>
                     `;
                     return;
@@ -2967,19 +2967,19 @@
                             </div>
                             
                             <div class="cliente-info">
-                                ${cliente.correo ? `<p>📧 ${cliente.correo}</p>` : ''}
-                                ${cliente.tel_celular ? `<p>📱 ${cliente.tel_celular}</p>` : ''}
-                                ${cliente.tel_fijo ? `<p>☎️ ${cliente.tel_fijo}</p>` : ''}
-                                ${cliente.direccion ? `<p>📍 ${cliente.direccion}</p>` : ''}
-                                ${cliente.zona ? `<p>🏢 <span class="cliente-zona">${cliente.zona} - ${zonaNombre}</span></p>` : ''}
+                                ${cliente.correo ? `<p>馃摟 ${cliente.correo}</p>` : ''}
+                                ${cliente.tel_celular ? `<p>馃摫 ${cliente.tel_celular}</p>` : ''}
+                                ${cliente.tel_fijo ? `<p>鈽庯笍 ${cliente.tel_fijo}</p>` : ''}
+                                ${cliente.direccion ? `<p>馃搷 ${cliente.direccion}</p>` : ''}
+                                ${cliente.zona ? `<p>馃彚 <span class="cliente-zona">${cliente.zona} - ${zonaNombre}</span></p>` : ''}
                             </div>
                             
                             <div class="cliente-actions">
                                 <button class="btn-action btn-editar" onclick="editCliente('${cliente.nit}')">
-                                    ✏️ Editar
+                                    鉁忥笍 Editar
                                 </button>
                                 <button class="btn-action btn-eliminar" onclick="deleteCliente('${cliente.nit}')">
-                                    🗑�?Eliminar
+                                    馃棏锔?Eliminar
                                 </button>
                             </div>
                         </div>
@@ -3017,11 +3017,11 @@
                 }
             });
             
-            // Inicializar módulo
+            // Inicializar m贸dulo
             await loadZonas();
             await loadClientes();
             
-            registerAction('Acceso módulo clientes', 'sistema', 'clientes', 'Usuario accedió al módulo de clientes');
+            registerAction('Acceso m贸dulo clientes', 'sistema', 'clientes', 'Usuario accedi贸 al m贸dulo de clientes');
         }
         
         async function showProductos() {
@@ -3029,7 +3029,7 @@
             document.getElementById('contentArea').style.display = 'block';
             document.getElementById('contentTitle').textContent = 'Productos';
             
-            // Variables globales del módulo
+            // Variables globales del m贸dulo
             let productosList = [];
             let filteredProductos = [];
             let currentProductoEdit = null;
@@ -3039,27 +3039,27 @@
             document.getElementById('contentBody').innerHTML = `
                 <div class="productos-container">
                     <div class="productos-header">
-                        <h2>Catálogo de Productos</h2>
+                        <h2>Cat谩logo de Productos</h2>
                         <button class="btn-nuevo" onclick="openProductoModal()">
                             <span>+ Nuevo Producto</span>
                         </button>
                     </div>
                     
-                    <!-- Estadísticas -->
+                    <!-- Estad铆sticas -->
                     <div class="productos-stats" id="productosStats">
-                        <!-- Estadísticas dinámicas -->
+                        <!-- Estad铆sticas din谩micas -->
                     </div>
                     
                     <!-- Filtros -->
                     <div class="productos-filters">
                         <div class="filter-group">
                             <input type="text" id="searchProductos" class="search-input" 
-                                   placeholder="🔍 Buscar por código o nombre..." 
+                                   placeholder="馃攳 Buscar por c贸digo o nombre..." 
                                    oninput="filterProductos()">
                         </div>
                         
                         <div class="filter-group">
-                            <label>📊 Stock:</label>
+                            <label>馃搳 Stock:</label>
                             <select id="filterStock" class="filter-select" onchange="filterProductos()">
                                 <option value="">Todos los productos</option>
                                 <option value="normal">Stock normal</option>
@@ -3069,7 +3069,7 @@
                         </div>
                         
                         <div class="filter-group">
-                            <label>📅 Estado:</label>
+                            <label>馃搮 Estado:</label>
                             <select id="filterEstado" class="filter-select" onchange="filterProductos()">
                                 <option value="">Todos</option>
                                 <option value="activo">Activos</option>
@@ -3081,7 +3081,7 @@
                     <!-- Lista de productos -->
                     <div id="productosList" class="productos-grid">
                         <div style="text-align: center; padding: 40px; color: #6b7280;">
-                            <div style="font-size: 24px; margin-bottom: 10px;">📦</div>
+                            <div style="font-size: 24px; margin-bottom: 10px;">馃摝</div>
                             <p>Cargando productos...</p>
                         </div>
                     </div>
@@ -3096,30 +3096,30 @@
                         </div>
                         
                         <form id="formProducto" onsubmit="saveProducto(event)">
-                            <!-- Sección de imagen -->
+                            <!-- Secci贸n de imagen -->
                             <div class="image-upload-section">
-                                <label>📷 Foto del Producto</label>
+                                <label>馃摲 Foto del Producto</label>
                                 <div class="image-upload" id="imageUploadArea" 
                                      onclick="triggerFileInput()"
                                      ondrop="handleDrop(event)" 
                                      ondragover="handleDragOver(event)"
                                      ondragleave="handleDragLeave(event)">
                                     <div class="image-preview" id="imagePreview">
-                                        📦
+                                        馃摝
                                     </div>
                                     <div class="upload-text">
-                                        <strong>Clic aquí</strong> o arrastra una imagen<br>
-                                        <span style="font-size: 12px;">JPG, PNG �?Máximo 1MB</span>
+                                        <strong>Clic aqu铆</strong> o arrastra una imagen<br>
+                                        <span style="font-size: 12px;">JPG, PNG 鈥?M谩ximo 1MB</span>
                                     </div>
                                     <input type="file" id="productoImage" accept="image/*" 
                                            style="display: none;" onchange="handleImageSelect(event)">
                                 </div>
                             </div>
                             
-                            <!-- Información básica -->
+                            <!-- Informaci贸n b谩sica -->
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="productoCodigo">Código <span class="required">*</span></label>
+                                    <label for="productoCodigo">C贸digo <span class="required">*</span></label>
                                     <input type="text" id="productoCodigo" class="form-control" required 
                                            placeholder="PROD001" maxlength="50" style="text-transform: uppercase;">
                                 </div>
@@ -3139,20 +3139,20 @@
                                 </div>
                             </div>
                             
-                            <!-- Sección de stock -->
+                            <!-- Secci贸n de stock -->
                             <div class="stock-section">
                                 <div class="stock-input-group">
-                                    <label for="stockActual">📦 Stock Actual</label>
+                                    <label for="stockActual">馃摝 Stock Actual</label>
                                     <input type="number" id="stockActual" min="0" max="99999" value="0"
                                            oninput="updateStockAlert()">
                                 </div>
                                 <div class="stock-input-group">
-                                    <label for="stockMinimo">⚠️ Stock Mínimo</label>
+                                    <label for="stockMinimo">鈿狅笍 Stock M铆nimo</label>
                                     <input type="number" id="stockMinimo" min="0" max="1000" value="5"
                                            oninput="updateStockAlert()">
                                 </div>
                                 <div class="stock-alert alert-info" id="stockAlert">
-                                    ℹ️ El sistema alertará cuando el stock sea menor al mínimo configurado
+                                    鈩癸笍 El sistema alertar谩 cuando el stock sea menor al m铆nimo configurado
                                 </div>
                             </div>
                             
@@ -3170,7 +3170,7 @@
                 </div>
             `;
             
-            // Funciones del módulo
+            // Funciones del m贸dulo
             window.openProductoModal = function(producto = null) {
                 currentProductoEdit = producto;
                 const modal = document.getElementById('modalProducto');
@@ -3189,7 +3189,7 @@
                     document.getElementById('productoActivo').checked = true;
                     document.getElementById('stockActual').value = 0;
                     document.getElementById('stockMinimo').value = stockMinimoDefault;
-                    document.getElementById('imagePreview').innerHTML = '📦';
+                    document.getElementById('imagePreview').innerHTML = '馃摝';
                     updateStockAlert();
                 }
                 
@@ -3239,13 +3239,13 @@
                 
                 if (stockActual === 0) {
                     alert.className = 'stock-alert alert-warning';
-                    alert.innerHTML = '⚠️ Producto sin stock - Se mostrará como AGOTADO';
+                    alert.innerHTML = '鈿狅笍 Producto sin stock - Se mostrar谩 como AGOTADO';
                 } else if (stockActual <= stockMinimo) {
                     alert.className = 'stock-alert alert-warning';
-                    alert.innerHTML = '⚠️ Stock por debajo del mínimo - Alerta de STOCK BAJO';
+                    alert.innerHTML = '鈿狅笍 Stock por debajo del m铆nimo - Alerta de STOCK BAJO';
                 } else {
                     alert.className = 'stock-alert alert-info';
-                    alert.innerHTML = '�?Stock normal - El producto se mostrará disponible';
+                    alert.innerHTML = '鉁?Stock normal - El producto se mostrar谩 disponible';
                 }
             };
             
@@ -3255,7 +3255,7 @@
                 const estadoFilter = document.getElementById('filterEstado').value;
                 
                 filteredProductos = productosList.filter(producto => {
-                    // Filtro de búsqueda
+                    // Filtro de b煤squeda
                     const matchSearch = producto.nombre.toLowerCase().includes(search) ||
                                       producto.codigo.toLowerCase().includes(search);
                     
@@ -3332,8 +3332,8 @@
                 if (!producto) return;
                 
                 const confirm = window.confirm(
-                    `¿Está seguro de eliminar el producto "${producto.nombre}"?\n\n` +
-                    'El producto será marcado como inactivo y no se eliminará permanentemente.'
+                    `驴Est谩 seguro de eliminar el producto "${producto.nombre}"?\n\n` +
+                    'El producto ser谩 marcado como inactivo y no se eliminar谩 permanentemente.'
                 );
                 
                 if (!confirm) return;
@@ -3362,9 +3362,9 @@
                     return;
                 }
                 
-                // Validar tamaño (1MB máximo)
+                // Validar tama帽o (1MB m谩ximo)
                 if (file.size > 1024 * 1024) {
-                    showNotification('La imagen es muy grande. Máximo 1MB', 'error');
+                    showNotification('La imagen es muy grande. M谩ximo 1MB', 'error');
                     return;
                 }
                 
@@ -3402,7 +3402,7 @@
                 if (producto.foto_base64) {
                     imagePreview.innerHTML = `<img src="${producto.foto_base64}" alt="Producto">`;
                 } else {
-                    imagePreview.innerHTML = '📦';
+                    imagePreview.innerHTML = '馃摝';
                 }
                 
                 updateStockAlert();
@@ -3414,16 +3414,16 @@
                     return { valid: false, message: 'Complete todos los campos obligatorios (*)' };
                 }
                 
-                // Validar formato de código
+                // Validar formato de c贸digo
                 if (!/^[A-Z0-9_-]+$/.test(data.codigo)) {
-                    return { valid: false, message: 'El código debe contener solo letras, números, guiones y guiones bajos' };
+                    return { valid: false, message: 'El c贸digo debe contener solo letras, n煤meros, guiones y guiones bajos' };
                 }
                 
-                // Validar código único (solo para nuevos productos)
+                // Validar c贸digo 煤nico (solo para nuevos productos)
                 if (!isEdit) {
                     const existingProducto = productosList.find(p => p.codigo === data.codigo);
                     if (existingProducto) {
-                        return { valid: false, message: 'Ya existe un producto con ese código' };
+                        return { valid: false, message: 'Ya existe un producto con ese c贸digo' };
                     }
                 }
                 
@@ -3498,7 +3498,7 @@
                 if (filteredProductos.length === 0) {
                     container.innerHTML = `
                         <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #6b7280;">
-                            <div style="font-size: 48px; margin-bottom: 10px;">📦</div>
+                            <div style="font-size: 48px; margin-bottom: 10px;">馃摝</div>
                             <h3>No se encontraron productos</h3>
                             <p>No hay productos que coincidan con los filtros seleccionados</p>
                         </div>
@@ -3509,9 +3509,9 @@
                 container.innerHTML = filteredProductos.map(producto => {
                     const stockStatus = getStockStatus(producto);
                     const stockIcon = {
-                        normal: '�?,
-                        bajo: '⚠️',
-                        agotado: '�?
+                        normal: '鉁?,
+                        bajo: '鈿狅笍',
+                        agotado: '鉂?
                     }[stockStatus];
                     
                     return `
@@ -3519,7 +3519,7 @@
                             <div class="producto-image">
                                 ${producto.foto_base64 ? 
                                     `<img src="${producto.foto_base64}" alt="${producto.nombre}">` : 
-                                    '📦'
+                                    '馃摝'
                                 }
                                 ${getStockBadge(producto)}
                             </div>
@@ -3531,21 +3531,21 @@
                                 <div class="producto-stock">
                                     <div class="stock-info">
                                         <div class="stock-actual">${producto.stock_actual} unidades</div>
-                                        <div class="stock-minimo">Mínimo: ${producto.stock_minimo}</div>
+                                        <div class="stock-minimo">M铆nimo: ${producto.stock_minimo}</div>
                                     </div>
                                     <div class="stock-icon">${stockIcon}</div>
                                 </div>
                                 
                                 <div class="producto-fecha">
-                                    📅 ${formatDate(producto.fecha_hora_creacion)}
+                                    馃搮 ${formatDate(producto.fecha_hora_creacion)}
                                 </div>
                                 
                                 <div class="producto-actions">
                                     <button class="btn-producto btn-producto-edit" onclick="editProducto('${producto.codigo}')">
-                                        ✏️ Editar
+                                        鉁忥笍 Editar
                                     </button>
                                     <button class="btn-producto btn-producto-delete" onclick="deleteProducto('${producto.codigo}')">
-                                        🗑�?Eliminar
+                                        馃棏锔?Eliminar
                                     </button>
                                 </div>
                             </div>
@@ -3565,19 +3565,19 @@
                 document.getElementById('productosStats').innerHTML = `
                     <div class="stat-card">
                         <div class="stat-number">${stats.total}</div>
-                        <div class="stat-label">📦 Total Productos</div>
+                        <div class="stat-label">馃摝 Total Productos</div>
                     </div>
                     <div class="stat-card success">
                         <div class="stat-number">${stats.activos}</div>
-                        <div class="stat-label">�?Productos Activos</div>
+                        <div class="stat-label">鉁?Productos Activos</div>
                     </div>
                     <div class="stat-card warning">
                         <div class="stat-number">${stats.stockBajo}</div>
-                        <div class="stat-label">⚠️ Stock Bajo</div>
+                        <div class="stat-label">鈿狅笍 Stock Bajo</div>
                     </div>
                     <div class="stat-card danger">
                         <div class="stat-number">${stats.agotado}</div>
-                        <div class="stat-label">�?Agotados</div>
+                        <div class="stat-label">鉂?Agotados</div>
                     </div>
                 `;
             }
@@ -3607,7 +3607,7 @@
                         }
                     }
                 } catch (error) {
-                    console.log('Usando stock mínimo por defecto:', stockMinimoDefault);
+                    console.log('Usando stock m铆nimo por defecto:', stockMinimoDefault);
                 }
             }
             
@@ -3625,11 +3625,11 @@
                 }
             });
             
-            // Inicializar módulo
+            // Inicializar m贸dulo
             await loadStockMinimo();
             await loadProductos();
             
-            registerAction('Acceso módulo productos', 'sistema', 'productos', 'Usuario accedió al módulo de productos');
+            registerAction('Acceso m贸dulo productos', 'sistema', 'productos', 'Usuario accedi贸 al m贸dulo de productos');
         }
         
         async function showEntradas() {
@@ -3637,7 +3637,7 @@
             document.getElementById('contentArea').style.display = 'block';
             document.getElementById('contentTitle').textContent = 'Entradas';
             
-            // Variables globales del módulo
+            // Variables globales del m贸dulo
             let entradasList = [];
             let productosList = [];
             let filteredEntradas = [];
@@ -3654,28 +3654,28 @@
                         </button>
                     </div>
                     
-                    <!-- Estadísticas -->
+                    <!-- Estad铆sticas -->
                     <div class="entradas-stats" id="entradasStats">
-                        <!-- Estadísticas dinámicas -->
+                        <!-- Estad铆sticas din谩micas -->
                     </div>
                     
                     <!-- Filtros -->
                     <div class="entradas-filters">
                         <div class="filter-group">
                             <input type="text" id="searchEntradas" class="search-input" 
-                                   placeholder="🔍 Buscar por producto..." 
+                                   placeholder="馃攳 Buscar por producto..." 
                                    oninput="filterEntradas()">
                         </div>
                         
                         <div class="filter-group">
-                            <label>📦 Producto:</label>
+                            <label>馃摝 Producto:</label>
                             <select id="filterProducto" class="filter-select" onchange="filterEntradas()">
                                 <option value="">Todos los productos</option>
                             </select>
                         </div>
                         
                         <div class="filter-group">
-                            <label>📋 Motivo:</label>
+                            <label>馃搵 Motivo:</label>
                             <select id="filterMotivo" class="filter-select" onchange="filterEntradas()">
                                 <option value="">Todos los movimientos</option>
                                 <option value="entrada">Solo entradas</option>
@@ -3684,7 +3684,7 @@
                         </div>
                         
                         <div class="filter-group">
-                            <label>📅 Período:</label>
+                            <label>馃搮 Per铆odo:</label>
                             <select id="filterPeriodo" class="filter-select" onchange="filterEntradas()">
                                 <option value="">Todo el tiempo</option>
                                 <option value="hoy">Hoy</option>
@@ -3699,19 +3699,19 @@
                         <table class="entradas-table" id="entradasTable">
                             <thead>
                                 <tr>
-                                    <th>📅 Fecha</th>
-                                    <th>📦 Producto</th>
-                                    <th>📋 Motivo</th>
-                                    <th>📊 Cantidad</th>
-                                    <th>💰 Precio Mayor</th>
-                                    <th>💰 Precio Menor</th>
-                                    <th>📝 Acciones</th>
+                                    <th>馃搮 Fecha</th>
+                                    <th>馃摝 Producto</th>
+                                    <th>馃搵 Motivo</th>
+                                    <th>馃搳 Cantidad</th>
+                                    <th>馃挵 Precio Mayor</th>
+                                    <th>馃挵 Precio Menor</th>
+                                    <th>馃摑 Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="entradasTableBody">
                                 <tr>
                                     <td colspan="7" style="text-align: center; padding: 40px; color: #6b7280;">
-                                        <div style="font-size: 24px; margin-bottom: 10px;">📋</div>
+                                        <div style="font-size: 24px; margin-bottom: 10px;">馃搵</div>
                                         <p>Cargando movimientos de inventario...</p>
                                     </td>
                                 </tr>
@@ -3731,23 +3731,23 @@
                         <form id="formEntrada" onsubmit="saveEntrada(event)">
                             <!-- Selector de producto -->
                             <div class="form-group">
-                                <label>📦 Seleccionar Producto <span class="required">*</span></label>
+                                <label>馃摝 Seleccionar Producto <span class="required">*</span></label>
                                 <div class="producto-selector">
                                     <div class="producto-search" id="productoSearchContainer">
                                         <input type="text" id="productoSearch" class="form-control" 
-                                               placeholder="Buscar producto por código o nombre..."
+                                               placeholder="Buscar producto por c贸digo o nombre..."
                                                oninput="searchProductos()" onfocus="showProductosDropdown()">
                                         <div class="productos-dropdown" id="productosDropdown">
-                                            <!-- Productos dinámicos -->
+                                            <!-- Productos din谩micos -->
                                         </div>
                                     </div>
                                     
                                     <div class="producto-selected" id="productoSelected" style="display: none;">
                                         <div class="selected-producto-info">
-                                            <div class="selected-producto-image" id="selectedProductoImage">📦</div>
+                                            <div class="selected-producto-image" id="selectedProductoImage">馃摝</div>
                                             <div class="selected-producto-details">
                                                 <h4 id="selectedProductoNombre">Producto</h4>
-                                                <p>Código: <span id="selectedProductoCodigo">-</span></p>
+                                                <p>C贸digo: <span id="selectedProductoCodigo">-</span></p>
                                                 <p>Stock actual: <span id="selectedProductoStock">0</span> unidades</p>
                                             </div>
                                             <button type="button" class="btn-change-producto" onclick="changeProducto()">
@@ -3760,17 +3760,17 @@
                             
                             <!-- Motivo -->
                             <div class="form-group motivo-section">
-                                <label>📋 Motivo del Movimiento <span class="required">*</span></label>
+                                <label>馃搵 Motivo del Movimiento <span class="required">*</span></label>
                                 <div class="motivo-options">
                                     <div class="motivo-option" data-motivo="entrada" onclick="selectMotivo('entrada')">
-                                        <div class="icon">📦</div>
+                                        <div class="icon">馃摝</div>
                                         <div class="title">Entrada</div>
-                                        <div class="description">Nueva mercancía</div>
+                                        <div class="description">Nueva mercanc铆a</div>
                                     </div>
                                     <div class="motivo-option" data-motivo="devolucion" onclick="selectMotivo('devolucion')">
-                                        <div class="icon">↩️</div>
-                                        <div class="title">Devolución</div>
-                                        <div class="description">Mercancía devuelta</div>
+                                        <div class="icon">鈫╋笍</div>
+                                        <div class="title">Devoluci贸n</div>
+                                        <div class="description">Mercanc铆a devuelta</div>
                                     </div>
                                 </div>
                             </div>
@@ -3778,32 +3778,32 @@
                             <!-- Precios -->
                             <div class="precios-section">
                                 <div class="precio-group">
-                                    <label>💰 Precio al por Mayor <span class="required">*</span></label>
+                                    <label>馃挵 Precio al por Mayor <span class="required">*</span></label>
                                     <input type="number" id="valorMayor" class="precio-input" 
                                            step="0.01" min="0" required placeholder="0.00">
                                     <div class="precio-sugerencia" id="sugerenciaMayor">
-                                        <!-- Sugerencia dinámica -->
+                                        <!-- Sugerencia din谩mica -->
                                     </div>
                                 </div>
                                 <div class="precio-group">
-                                    <label>💰 Precio al por Menor <span class="required">*</span></label>
+                                    <label>馃挵 Precio al por Menor <span class="required">*</span></label>
                                     <input type="number" id="valorMenor" class="precio-input" 
                                            step="0.01" min="0" required placeholder="0.00">
                                     <div class="precio-sugerencia" id="sugerenciaMenor">
-                                        <!-- Sugerencia dinámica -->
+                                        <!-- Sugerencia din谩mica -->
                                     </div>
                                 </div>
                             </div>
                             
                             <!-- Cantidad -->
                             <div class="form-group">
-                                <label for="cantidad">📊 Cantidad <span class="required">*</span></label>
+                                <label for="cantidad">馃搳 Cantidad <span class="required">*</span></label>
                                 <div class="cantidad-section">
                                     <input type="number" id="cantidad" class="cantidad-input" 
                                            min="1" required placeholder="0" oninput="updateStockPreview()">
                                     <div class="stock-preview" id="stockPreview" style="display: none;">
                                         <div class="stock-actual">Stock actual: <span id="stockActualPreview">0</span></div>
-                                        <div class="stock-nuevo">Stock después: <span id="stockNuevoPreview">0</span> unidades</div>
+                                        <div class="stock-nuevo">Stock despu茅s: <span id="stockNuevoPreview">0</span> unidades</div>
                                     </div>
                                 </div>
                             </div>
@@ -3822,7 +3822,7 @@
                 </div>
             `;
             
-            // Funciones del módulo
+            // Funciones del m贸dulo
             window.openEntradaModal = function() {
                 const modal = document.getElementById('modalEntrada');
                 resetEntradaForm();
@@ -3871,7 +3871,7 @@
                 document.getElementById('productoSearchContainer').style.display = 'none';
                 document.getElementById('productoSelected').style.display = 'block';
                 
-                // Llenar información
+                // Llenar informaci贸n
                 document.getElementById('selectedProductoNombre').textContent = producto.nombre;
                 document.getElementById('selectedProductoCodigo').textContent = producto.codigo;
                 document.getElementById('selectedProductoStock').textContent = producto.stock_actual || 0;
@@ -3881,17 +3881,17 @@
                 if (producto.foto_base64) {
                     imageContainer.innerHTML = `<img src="${producto.foto_base64}" alt="${producto.nombre}">`;
                 } else {
-                    imageContainer.innerHTML = '📦';
+                    imageContainer.innerHTML = '馃摝';
                 }
                 
-                // Cargar última entrada para sugerencias
+                // Cargar 煤ltima entrada para sugerencias
                 await loadUltimaEntrada(codigo);
                 updatePreciosSugerencias();
                 updateStockPreview();
                 
                 // Ocultar dropdown
                 document.getElementById('productosDropdown').classList.remove('show');
-            };
+            }; 
             
             window.changeProducto = function() {
                 document.getElementById('productoSearchContainer').style.display = 'block';
@@ -3909,7 +3909,7 @@
                 document.querySelectorAll('.motivo-option').forEach(opt => opt.classList.remove('selected'));
                 document.querySelector(`[data-motivo="${motivo}"]`).classList.add('selected');
                 
-                // Si es devolución y hay última entrada, usar esos precios
+                // Si es devoluci贸n y hay 煤ltima entrada, usar esos precios
                 if (motivo === 'devolucion' && ultimaEntradaProducto) {
                     document.getElementById('valorMayor').value = ultimaEntradaProducto.valor_mayor;
                     document.getElementById('valorMenor').value = ultimaEntradaProducto.valor_menor;
@@ -3947,7 +3947,7 @@
                 const periodoFilter = document.getElementById('filterPeriodo').value;
                 
                 filteredEntradas = entradasList.filter(entrada => {
-                    // Filtro de búsqueda
+                    // Filtro de b煤squeda
                     const producto = productosList.find(p => p.codigo === entrada.codigo_producto);
                     const matchSearch = !search || 
                         (producto && (
@@ -3961,7 +3961,7 @@
                     // Filtro de motivo
                     const matchMotivo = !motivoFilter || entrada.motivo === motivoFilter;
                     
-                    // Filtro de período
+                    // Filtro de per铆odo
                     let matchPeriodo = true;
                     if (periodoFilter) {
                         const entradaDate = new Date(entrada.fecha_hora);
@@ -4039,7 +4039,7 @@
                 alert(
                     `DETALLE DE ENTRADA\n\n` +
                     `Producto: ${producto.nombre}\n` +
-                    `Código: ${entrada.codigo_producto}\n` +
+                    `C贸digo: ${entrada.codigo_producto}\n` +
                     `Motivo: ${entrada.motivo.toUpperCase()}\n` +
                     `Cantidad: ${entrada.cantidad} unidades\n` +
                     `Precio Mayor: ${formatCurrency(entrada.valor_mayor)}\n` +
@@ -4106,7 +4106,7 @@
                 }
                 
                 if (!data.motivo) {
-                    return { valid: false, message: 'Debe seleccionar un motivo (Entrada o Devolución)' };
+                    return { valid: false, message: 'Debe seleccionar un motivo (Entrada o Devoluci贸n)' };
                 }
                 
                 if (data.valor_mayor <= 0 || data.valor_menor <= 0) {
@@ -4168,7 +4168,7 @@
                         ultimaEntradaProducto = productEntradas.length > 0 ? productEntradas[0] : null;
                     }
                 } catch (error) {
-                    console.error('Error cargando última entrada:', error);
+                    console.error('Error cargando 煤ltima entrada:', error);
                     ultimaEntradaProducto = null;
                 }
             }
@@ -4179,12 +4179,12 @@
                 
                 if (ultimaEntradaProducto) {
                     sugerenciaMayor.innerHTML = `
-                        Última entrada: <span class="sugerido" onclick="useSugerencia('mayor')">
+                        脷ltima entrada: <span class="sugerido" onclick="useSugerencia('mayor')">
                             ${formatCurrency(ultimaEntradaProducto.valor_mayor)}
                         </span>
                     `;
                     sugerenciaMenor.innerHTML = `
-                        Última entrada: <span class="sugerido" onclick="useSugerencia('menor')">
+                        脷ltima entrada: <span class="sugerido" onclick="useSugerencia('menor')">
                             ${formatCurrency(ultimaEntradaProducto.valor_menor)}
                         </span>
                     `;
@@ -4261,7 +4261,7 @@
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="7" class="empty-state">
-                                <div class="icon">📋</div>
+                                <div class="icon">馃搵</div>
                                 <h3>No hay movimientos registrados</h3>
                                 <p>No se encontraron entradas que coincidan con los filtros</p>
                             </td>
@@ -4292,7 +4292,7 @@
                             </td>
                             <td>
                                 <span class="motivo-badge motivo-${entrada.motivo}">
-                                    ${entrada.motivo === 'entrada' ? '📦 ENTRADA' : '↩️ DEVOLUCIÓN'}
+                                    ${entrada.motivo === 'entrada' ? '馃摝 ENTRADA' : '鈫╋笍 DEVOLUCI脫N'}
                                 </span>
                             </td>
                             <td class="cantidad-cell">
@@ -4307,7 +4307,7 @@
                             <td style="text-align: center;">
                                 <button class="btn-action btn-editar" onclick="verDetalleEntrada(${entrada.id})" 
                                         style="padding: 4px 8px; font-size: 12px;">
-                                    👁�?Ver
+                                    馃憗锔?Ver
                                 </button>
                             </td>
                         </tr>
@@ -4323,22 +4323,22 @@
                 
                 document.getElementById('entradasStats').innerHTML = `
                     <div class="stat-card-entradas">
-                        <div class="stat-icon">📋</div>
+                        <div class="stat-icon">馃搵</div>
                         <div class="stat-value">${totalMovimientos}</div>
                         <div class="stat-description">Total Movimientos</div>
                     </div>
                     <div class="stat-card-entradas entrada">
-                        <div class="stat-icon">📦</div>
+                        <div class="stat-icon">馃摝</div>
                         <div class="stat-value">${entradas.length}</div>
                         <div class="stat-description">Entradas</div>
                     </div>
                     <div class="stat-card-entradas devolucion">
-                        <div class="stat-icon">↩️</div>
+                        <div class="stat-icon">鈫╋笍</div>
                         <div class="stat-value">${devoluciones.length}</div>
                         <div class="stat-description">Devoluciones</div>
                     </div>
                     <div class="stat-card-entradas productos">
-                        <div class="stat-icon">📦</div>
+                        <div class="stat-icon">馃摝</div>
                         <div class="stat-value">${productosAfectados}</div>
                         <div class="stat-description">Productos Afectados</div>
                     </div>
@@ -4382,11 +4382,11 @@
                 }
             });
             
-            // Inicializar módulo
+            // Inicializar m贸dulo
             await loadProductos();
             await loadEntradas();
             
-            registerAction('Acceso módulo entradas', 'sistema', 'entradas', 'Usuario accedió al módulo de entradas');
+            registerAction('Acceso m贸dulo entradas', 'sistema', 'entradas', 'Usuario accedi贸 al m贸dulo de entradas');
         }
         
         async function showCotizaciones() {
@@ -4394,7 +4394,7 @@
             document.getElementById('contentArea').style.display = 'block';
             document.getElementById('contentTitle').textContent = 'Cotizaciones';
             
-            // Variables globales del módulo
+            // Variables globales del m贸dulo
             let cotizacionesList = [];
             let clientesList = [];
             let productosList = [];
@@ -4408,27 +4408,27 @@
             document.getElementById('contentBody').innerHTML = `
                 <div class="cotizaciones-container">
                     <div class="cotizaciones-header">
-                        <h2>Gestión de Cotizaciones</h2>
+                        <h2>Gesti贸n de Cotizaciones</h2>
                         <button class="btn-nuevo" onclick="openCotizacionModal()">
-                            <span>+ Nueva Cotización</span>
+                            <span>+ Nueva Cotizaci贸n</span>
                         </button>
                     </div>
                     
-                    <!-- Estadísticas -->
+                    <!-- Estad铆sticas -->
                     <div class="cotizaciones-stats" id="cotizacionesStats">
-                        <!-- Estadísticas dinámicas -->
+                        <!-- Estad铆sticas din谩micas -->
                     </div>
                     
                     <!-- Filtros -->
                     <div class="entradas-filters">
                         <div class="filter-group">
                             <input type="text" id="searchCotizaciones" class="search-input" 
-                                   placeholder="🔍 Buscar por cliente o consecutivo..." 
+                                   placeholder="馃攳 Buscar por cliente o consecutivo..." 
                                    oninput="filterCotizaciones()">
                         </div>
                         
                         <div class="filter-group">
-                            <label>📋 Estado:</label>
+                            <label>馃搵 Estado:</label>
                             <select id="filterEstado" class="filter-select" onchange="filterCotizaciones()">
                                 <option value="">Todos los estados</option>
                                 <option value="Pendiente">Pendientes</option>
@@ -4439,14 +4439,14 @@
                         </div>
                         
                         <div class="filter-group">
-                            <label>👥 Cliente:</label>
+                            <label>馃懃 Cliente:</label>
                             <select id="filterCliente" class="filter-select" onchange="filterCotizaciones()">
                                 <option value="">Todos los clientes</option>
                             </select>
                         </div>
                         
                         <div class="filter-group">
-                            <label>📅 Período:</label>
+                            <label>馃搮 Per铆odo:</label>
                             <select id="filterPeriodo" class="filter-select" onchange="filterCotizaciones()">
                                 <option value="">Todo el tiempo</option>
                                 <option value="hoy">Hoy</option>
@@ -4459,17 +4459,17 @@
                     <!-- Lista de cotizaciones -->
                     <div id="cotizacionesList" class="cotizaciones-grid">
                         <div style="text-align: center; padding: 40px; color: #6b7280;">
-                            <div style="font-size: 24px; margin-bottom: 10px;">💰</div>
+                            <div style="font-size: 24px; margin-bottom: 10px;">馃挵</div>
                             <p>Cargando cotizaciones...</p>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Modal Nueva Cotización -->
+                <!-- Modal Nueva Cotizaci贸n -->
                 <div id="modalCotizacion" class="modal">
                     <div class="modal-content modal-cotizacion">
                         <div class="modal-header">
-                            <h3 class="modal-title">Nueva Cotización</h3>
+                            <h3 class="modal-title">Nueva Cotizaci贸n</h3>
                             <button class="btn-close" onclick="closeCotizacionModal()">&times;</button>
                         </div>
                         
@@ -4490,14 +4490,14 @@
                             <!-- Tab 1: Cliente -->
                             <div id="tabCliente" class="tab-panel active">
                                 <div class="form-group">
-                                    <label>👥 Seleccionar Cliente <span class="required">*</span></label>
+                                    <label>馃懃 Seleccionar Cliente <span class="required">*</span></label>
                                     <div class="cliente-selector">
                                         <div class="cliente-search" id="clienteSearchContainer">
                                             <input type="text" id="clienteSearch" class="form-control" 
                                                    placeholder="Buscar cliente por nombre o NIT..."
                                                    oninput="searchClientes()" onfocus="showClientesDropdown()">
                                             <div class="clientes-dropdown" id="clientesDropdown">
-                                                <!-- Clientes dinámicos -->
+                                                <!-- Clientes din谩micos -->
                                             </div>
                                         </div>
                                         
@@ -4522,24 +4522,24 @@
                             <div id="tabProductos" class="tab-panel">
                                 <div class="productos-section">
                                     <div class="productos-header">
-                                        <h4>📦 Productos de la Cotización</h4>
+                                        <h4>馃摝 Productos de la Cotizaci贸n</h4>
                                         <span id="productosCount">0 productos</span>
                                     </div>
                                     
                                     <div class="productos-search">
                                         <input type="text" id="productosSearch" class="form-control" 
-                                               placeholder="🔍 Buscar producto para agregar..."
+                                               placeholder="馃攳 Buscar producto para agregar..."
                                                oninput="searchProductosCotizacion()" onfocus="showProductosCotizacionDropdown()">
                                         <div class="productos-cotizacion-dropdown" id="productosCotizacionDropdown">
-                                            <!-- Productos dinámicos -->
+                                            <!-- Productos din谩micos -->
                                         </div>
                                     </div>
                                     
                                     <div class="productos-lista" id="productosLista">
                                         <div class="empty-productos">
-                                            <div style="font-size: 48px; margin-bottom: 10px;">📦</div>
+                                            <div style="font-size: 48px; margin-bottom: 10px;">馃摝</div>
                                             <h4>No hay productos agregados</h4>
-                                            <p>Busque y seleccione productos para agregar a la cotización</p>
+                                            <p>Busque y seleccione productos para agregar a la cotizaci贸n</p>
                                         </div>
                                     </div>
                                 </div>
@@ -4548,11 +4548,11 @@
                             <!-- Tab 3: Resumen -->
                             <div id="tabResumen" class="tab-panel">
                                 <div id="resumenCotizacion">
-                                    <!-- Resumen dinámico -->
+                                    <!-- Resumen din谩mico -->
                                 </div>
                                 
                                 <div class="cotizacion-totales" id="cotizacionTotales">
-                                    <!-- Totales dinámicos -->
+                                    <!-- Totales din谩micos -->
                                 </div>
                             </div>
                             
@@ -4561,7 +4561,7 @@
                                     Cancelar
                                 </button>
                                 <button type="submit" class="btn-primary" id="btnSaveCotizacion">
-                                    <span class="btn-text">Crear Cotización</span>
+                                    <span class="btn-text">Crear Cotizaci贸n</span>
                                     <span class="loading" style="display: none;"></span>
                                 </button>
                             </div>
@@ -4570,14 +4570,14 @@
                 </div>
             `;
             
-            // Cargar jsPDF dinámicamente
+            // Cargar jsPDF din谩micamente
             if (!window.jsPDF) {
                 const script = document.createElement('script');
                 script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
                 document.head.appendChild(script);
             }
             
-            // Funciones del módulo
+            // Funciones del m贸dulo
             window.openCotizacionModal = function() {
                 const modal = document.getElementById('modalCotizacion');
                 resetCotizacionForm();
@@ -4641,11 +4641,11 @@
                 document.getElementById('clienteSearchContainer').style.display = 'none';
                 document.getElementById('clienteSelected').style.display = 'block';
                 
-                // Llenar información
+                // Llenar informaci贸n
                 document.getElementById('selectedClienteNombre').textContent = cliente.nombre;
                 document.getElementById('selectedClienteNit').textContent = cliente.nit;
-                document.getElementById('selectedClienteCorreo').textContent = cliente.correo ? `📧 ${cliente.correo}` : '';
-                document.getElementById('selectedClienteZona').textContent = cliente.zona ? `🏢 ${cliente.zona}` : '';
+                document.getElementById('selectedClienteCorreo').textContent = cliente.correo ? `馃摟 ${cliente.correo}` : '';
+                document.getElementById('selectedClienteZona').textContent = cliente.zona ? `馃彚 ${cliente.zona}` : '';
                 
                 // Ocultar dropdown
                 document.getElementById('clientesDropdown').classList.remove('show');
@@ -4690,10 +4690,10 @@
                 const producto = productosList.find(p => p.codigo === codigo);
                 if (!producto) return;
                 
-                // Verificar si ya está en la cotización
+                // Verificar si ya est谩 en la cotizaci贸n
                 const existing = productosEnCotizacion.find(p => p.codigo === codigo);
                 if (existing) {
-                    showNotification('El producto ya está en la cotización', 'warning');
+                    showNotification('El producto ya est谩 en la cotizaci贸n', 'warning');
                     return;
                 }
                 
@@ -4704,7 +4704,7 @@
                     foto_base64: producto.foto_base64,
                     stock_actual: producto.stock_actual,
                     cantidad: 1,
-                    valor_unitario: 0, // Se calculará automáticamente
+                    valor_unitario: 0, // Se calcular谩 autom谩ticamente
                     subtotal: 0,
                     tipo_precio: 'menor' // Por defecto menor
                 };
@@ -4714,11 +4714,11 @@
                 renderProductosEnCotizacion();
                 updateProductosCount();
                 
-                // Limpiar búsqueda
+                // Limpiar b煤squeda
                 document.getElementById('productosSearch').value = '';
                 document.getElementById('productosCotizacionDropdown').classList.remove('show');
                 
-                showNotification('Producto agregado a la cotización', 'success');
+                showNotification('Producto agregado a la cotizaci贸n', 'success');
             };
             
             window.updateCantidadProducto = function(codigo, nuevaCantidad) {
@@ -4753,7 +4753,7 @@
                 const periodoFilter = document.getElementById('filterPeriodo').value;
                 
                 filteredCotizaciones = cotizacionesList.filter(cotizacion => {
-                    // Filtro de búsqueda
+                    // Filtro de b煤squeda
                     const matchSearch = !search || 
                         cotizacion.nombre_cliente.toLowerCase().includes(search) ||
                         cotizacion.consecutivo.toLowerCase().includes(search);
@@ -4764,7 +4764,7 @@
                     // Filtro de cliente
                     const matchCliente = !clienteFilter || cotizacion.nit_cliente === clienteFilter;
                     
-                    // Filtro de período
+                    // Filtro de per铆odo
                     let matchPeriodo = true;
                     if (periodoFilter) {
                         const cotizacionDate = new Date(cotizacion.fecha_hora);
@@ -4817,7 +4817,7 @@
                     const subtotal = productosEnCotizacion.reduce((sum, p) => sum + p.subtotal, 0);
                     const total = subtotal; // Sin impuestos por ahora
                     
-                    // Crear cotización
+                    // Crear cotizaci贸n
                     const cotizacionData = {
                         consecutivo: consecutivo,
                         nit_cliente: selectedCliente.nit,
@@ -4831,10 +4831,10 @@
                         usuario_creacion: currentUser?.username || 'sistema'
                     };
                     
-                    // Guardar cotización
+                    // Guardar cotizaci贸n
                     const result = await executeQuery('cotizaciones', 'insert', [cotizacionData]);
                     
-                    // Obtener ID de la cotización
+                    // Obtener ID de la cotizaci贸n
                     let cotizacionId;
                     if (isOnline() && supabase) {
                         const { data } = await supabase
@@ -4862,10 +4862,10 @@
                         await executeQuery('cotizacion_detalle', 'insert', [detalleData]);
                     }
                     
-                    showNotification('Cotización creada correctamente', 'success');
+                    showNotification('Cotizaci贸n creada correctamente', 'success');
                     
                     await registerAction(
-                        'Crear cotización',
+                        'Crear cotizaci贸n',
                         'cotizaciones',
                         consecutivo,
                         `Cliente: ${selectedCliente.nombre}, Total: ${formatCurrency(total)}`
@@ -4875,15 +4875,15 @@
                     await loadCotizaciones();
                     
                 } catch (error) {
-                    console.error('Error guardando cotización:', error);
-                    showNotification('Error al crear cotización: ' + error.message, 'error');
+                    console.error('Error guardando cotizaci贸n:', error);
+                    showNotification('Error al crear cotizaci贸n: ' + error.message, 'error');
                 } finally {
                     showCotizacionLoading(false);
                 }
             };
             
             window.editCotizacion = function(consecutivo) {
-                showNotification('Función de edición en desarrollo', 'info');
+                showNotification('Funci贸n de edici贸n en desarrollo', 'info');
             };
             
             window.generatePDF = async function(consecutivo) {
@@ -4896,7 +4896,7 @@
                     const cotizacion = cotizacionesList.find(c => c.consecutivo === consecutivo);
                     if (!cotizacion) return;
                     
-                    // Cargar detalles de la cotización
+                    // Cargar detalles de la cotizaci贸n
                     const detalles = await loadCotizacionDetalles(cotizacion.id_cotizacion);
                     
                     // Generar PDF
@@ -4915,27 +4915,27 @@
                         }
                     }
                     
-                    // Título
+                    // T铆tulo
                     doc.setFontSize(20);
                     doc.setTextColor(40, 40, 40);
-                    doc.text('COTIZACIÓN', 105, 60, { align: 'center' });
+                    doc.text('COTIZACI脫N', 105, 60, { align: 'center' });
                     
-                    // Información de empresa
+                    // Informaci贸n de empresa
                     doc.setFontSize(12);
                     doc.text(parametrosEmpresa?.nombre_empresa || 'Tool Center', 20, 80);
-                    doc.text(`Ibagué, ${formatDate(cotizacion.fecha_hora)}`, 20, 90);
+                    doc.text(`Ibagu茅, ${formatDate(cotizacion.fecha_hora)}`, 20, 90);
                     
-                    // Número de cotización
+                    // N煤mero de cotizaci贸n
                     doc.setFontSize(14);
                     doc.setTextColor(0, 100, 200);
                     doc.text(`${consecutivo}`, 150, 80);
                     
-                    // Información del cliente
+                    // Informaci贸n del cliente
                     doc.setFontSize(12);
                     doc.setTextColor(40, 40, 40);
-                    doc.text(`Señor(a): ${cotizacion.nombre_cliente}`, 20, 110);
+                    doc.text(`Se帽or(a): ${cotizacion.nombre_cliente}`, 20, 110);
                     doc.text('Cordial saludo', 20, 125);
-                    doc.text('Anexo cotización según lista:', 20, 140);
+                    doc.text('Anexo cotizaci贸n seg煤n lista:', 20, 140);
                     
                     // Tabla de productos
                     let yPosition = 160;
@@ -4978,7 +4978,7 @@
                     yPosition += 30;
                     doc.setFontSize(10);
                     doc.text('Cordialmente,', 20, yPosition);
-                    doc.text('Jorge Luis Hernández', 20, yPosition + 15);
+                    doc.text('Jorge Luis Hern谩ndez', 20, yPosition + 15);
                     doc.text('Celular: 314 345 2032', 20, yPosition + 25);
                     
                     // Descargar PDF
@@ -4997,13 +4997,13 @@
                 if (!cotizacion) return;
                 
                 if (cotizacion.estado === 'Vendida') {
-                    showNotification('Esta cotización ya fue confirmada como venta', 'warning');
+                    showNotification('Esta cotizaci贸n ya fue confirmada como venta', 'warning');
                     return;
                 }
                 
                 const confirm = window.confirm(
-                    `¿Confirmar cotización ${consecutivo} como VENTA?\n\n` +
-                    'Esto actualizará el estado y descontará el stock de los productos.'
+                    `驴Confirmar cotizaci贸n ${consecutivo} como VENTA?\n\n` +
+                    'Esto actualizar谩 el estado y descontar谩 el stock de los productos.'
                 );
                 
                 if (!confirm) return;
@@ -5021,7 +5021,7 @@
                         }
                     }
                     
-                    // Actualizar estado de cotización
+                    // Actualizar estado de cotizaci贸n
                     await executeQuery('cotizaciones', 'update', {
                         updates: { estado: 'Vendida' },
                         where: { column: 'consecutivo', value: consecutivo }
@@ -5063,11 +5063,11 @@
                 if (!cotizacion) return;
                 
                 if (cotizacion.estado === 'Vendida') {
-                    showNotification('No se puede anular una cotización vendida', 'error');
+                    showNotification('No se puede anular una cotizaci贸n vendida', 'error');
                     return;
                 }
                 
-                const motivo = prompt('Motivo de anulación:');
+                const motivo = prompt('Motivo de anulaci贸n:');
                 if (!motivo) return;
                 
                 try {
@@ -5079,10 +5079,10 @@
                         where: { column: 'consecutivo', value: consecutivo }
                     });
                     
-                    showNotification('Cotización anulada correctamente', 'success');
+                    showNotification('Cotizaci贸n anulada correctamente', 'success');
                     
                     await registerAction(
-                        'Anular cotización',
+                        'Anular cotizaci贸n',
                         'cotizaciones',
                         consecutivo,
                         `Motivo: ${motivo}`
@@ -5091,8 +5091,8 @@
                     await loadCotizaciones();
                     
                 } catch (error) {
-                    console.error('Error anulando cotización:', error);
-                    showNotification('Error al anular cotización: ' + error.message, 'error');
+                    console.error('Error anulando cotizaci贸n:', error);
+                    showNotification('Error al anular cotizaci贸n: ' + error.message, 'error');
                 }
             };
             
@@ -5117,14 +5117,14 @@
             }
             
             function updateProductoPrecio(producto) {
-                // Obtener última entrada del producto
+                // Obtener 煤ltima entrada del producto
                 const ultimasEntradas = entradasList?.filter(e => e.codigo_producto === producto.codigo)
                     .sort((a, b) => new Date(b.fecha_hora) - new Date(a.fecha_hora)) || [];
                 
                 const ultimaEntrada = ultimasEntradas[0];
                 
                 if (ultimaEntrada) {
-                    // Usar precios de última entrada
+                    // Usar precios de 煤ltima entrada
                     if (producto.cantidad >= cantidadMayorista) {
                         producto.valor_unitario = ultimaEntrada.valor_mayor;
                         producto.tipo_precio = 'mayor';
@@ -5156,7 +5156,7 @@
                 dropdown.innerHTML = clientes.map(cliente => `
                     <div class="cliente-option" onclick="selectCliente('${cliente.nit}')">
                         <div class="cliente-option-nombre">${cliente.nombre}</div>
-                        <div class="cliente-option-nit">NIT: ${cliente.nit} ${cliente.zona ? `�?${cliente.zona}` : ''}</div>
+                        <div class="cliente-option-nit">NIT: ${cliente.nit} ${cliente.zona ? `鈥?${cliente.zona}` : ''}</div>
                     </div>
                 `).join('');
             }
@@ -5178,13 +5178,13 @@
                         <div class="producto-option-image">
                             ${producto.foto_base64 ? 
                                 `<img src="${producto.foto_base64}" alt="${producto.nombre}">` : 
-                                '📦'
+                                '馃摝'
                             }
                         </div>
                         <div style="flex: 1;">
                             <div style="font-weight: 500; color: #1f2937;">${producto.nombre}</div>
                             <div style="font-size: 12px; color: #6b7280;">
-                                ${producto.codigo} �?Stock: ${producto.stock_actual}
+                                ${producto.codigo} 鈥?Stock: ${producto.stock_actual}
                             </div>
                         </div>
                     </div>
@@ -5197,9 +5197,9 @@
                 if (productosEnCotizacion.length === 0) {
                     container.innerHTML = `
                         <div class="empty-productos">
-                            <div style="font-size: 48px; margin-bottom: 10px;">📦</div>
+                            <div style="font-size: 48px; margin-bottom: 10px;">馃摝</div>
                             <h4>No hay productos agregados</h4>
-                            <p>Busque y seleccione productos para agregar a la cotización</p>
+                            <p>Busque y seleccione productos para agregar a la cotizaci贸n</p>
                         </div>
                     `;
                     return;
@@ -5210,7 +5210,7 @@
                         <div class="producto-item-image">
                             ${producto.foto_base64 ? 
                                 `<img src="${producto.foto_base64}" alt="${producto.nombre}">` : 
-                                '📦'
+                                '馃摝'
                             }
                         </div>
                         <div class="producto-item-info">
@@ -5225,7 +5225,7 @@
                         </div>
                         <div class="cantidad-controls">
                             <button class="btn-cantidad" onclick="updateCantidadProducto('${producto.codigo}', ${producto.cantidad - 1})">
-                                �?
+                                鈭?
                             </button>
                             <input type="number" class="cantidad-input" value="${producto.cantidad}" min="1" 
                                    onchange="updateCantidadProducto('${producto.codigo}', parseInt(this.value))">
@@ -5238,7 +5238,7 @@
                                 ${formatCurrency(producto.subtotal)}
                             </div>
                             <button class="btn-eliminar-producto" onclick="removeProductoFromCotizacion('${producto.codigo}')">
-                                🗑�?
+                                馃棏锔?
                             </button>
                         </div>
                     </div>
@@ -5264,22 +5264,22 @@
                     return;
                 }
                 
-                // Información del cliente
+                // Informaci贸n del cliente
                 resumenContainer.innerHTML = `
                     <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                        <h4 style="margin: 0 0 10px 0;">👥 Cliente</h4>
+                        <h4 style="margin: 0 0 10px 0;">馃懃 Cliente</h4>
                         <p style="margin: 0;"><strong>${selectedCliente.nombre}</strong></p>
                         <p style="margin: 0; font-size: 14px; color: #6b7280;">NIT: ${selectedCliente.nit}</p>
-                        ${selectedCliente.correo ? `<p style="margin: 0; font-size: 14px; color: #6b7280;">📧 ${selectedCliente.correo}</p>` : ''}
+                        ${selectedCliente.correo ? `<p style="margin: 0; font-size: 14px; color: #6b7280;">馃摟 ${selectedCliente.correo}</p>` : ''}
                     </div>
                     
                     <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
-                        <h4 style="margin: 0 0 15px 0;">📦 Productos (${productosEnCotizacion.length})</h4>
+                        <h4 style="margin: 0 0 15px 0;">馃摝 Productos (${productosEnCotizacion.length})</h4>
                         ${productosEnCotizacion.map(p => `
                             <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 8px; padding: 8px; background: white; border-radius: 4px;">
                                 <div style="flex: 1;">
                                     <strong>${p.nombre}</strong><br>
-                                    <span style="font-size: 12px; color: #6b7280;">${p.codigo} �?${p.cantidad} unidades</span>
+                                    <span style="font-size: 12px; color: #6b7280;">${p.codigo} 鈥?${p.cantidad} unidades</span>
                                 </div>
                                 <div style="text-align: right;">
                                     <div>${formatCurrency(p.subtotal)}</div>
@@ -5398,7 +5398,7 @@
                     }
                     
                 } catch (error) {
-                    console.error('Error cargando parámetros:', error);
+                    console.error('Error cargando par谩metros:', error);
                 }
             }
             
@@ -5425,9 +5425,9 @@
                 if (filteredCotizaciones.length === 0) {
                     container.innerHTML = `
                         <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #6b7280;">
-                            <div style="font-size: 48px; margin-bottom: 10px;">💰</div>
+                            <div style="font-size: 48px; margin-bottom: 10px;">馃挵</div>
                             <h3>No hay cotizaciones registradas</h3>
-                            <p>Cree la primera cotización usando el botón "Nueva Cotización"</p>
+                            <p>Cree la primera cotizaci贸n usando el bot贸n "Nueva Cotizaci贸n"</p>
                         </div>
                     `;
                     return;
@@ -5441,7 +5441,7 @@
                         </div>
                         <div class="cotizacion-info">
                             <div class="cotizacion-cliente">${cotizacion.nombre_cliente}</div>
-                            <div class="cotizacion-fecha">📅 ${formatDate(cotizacion.fecha_hora)}</div>
+                            <div class="cotizacion-fecha">馃搮 ${formatDate(cotizacion.fecha_hora)}</div>
                             
                             <div class="cotizacion-resumen">
                                 <div class="resumen-total">
@@ -5461,7 +5461,7 @@
             function getActionsForEstado(cotizacion) {
                 const baseActions = `
                     <button class="btn-cotizacion btn-cotizacion-pdf" onclick="generatePDF('${cotizacion.consecutivo}')">
-                        📄 PDF
+                        馃搫 PDF
                     </button>
                 `;
                 
@@ -5469,28 +5469,28 @@
                     case 'Pendiente':
                         return baseActions + `
                             <button class="btn-cotizacion btn-cotizacion-confirmar" onclick="confirmarVenta('${cotizacion.consecutivo}')">
-                                �?Confirmar Venta
+                                鉁?Confirmar Venta
                             </button>
                             <button class="btn-cotizacion btn-cotizacion-anular" onclick="anularCotizacion('${cotizacion.consecutivo}')">
-                                �?Anular
+                                鉂?Anular
                             </button>
                         `;
                     case 'Enviada':
                         return baseActions + `
                             <button class="btn-cotizacion btn-cotizacion-confirmar" onclick="confirmarVenta('${cotizacion.consecutivo}')">
-                                �?Confirmar Venta
+                                鉁?Confirmar Venta
                             </button>
                         `;
                     case 'Vendida':
                         return baseActions + `
                             <div style="color: #059669; font-size: 12px; text-align: center; padding: 8px;">
-                                �?Venta confirmada
+                                鉁?Venta confirmada
                             </div>
                         `;
                     case 'Anulada':
                         return baseActions + `
                             <div style="color: #dc2626; font-size: 12px; text-align: center; padding: 8px;">
-                                �?Cotización anulada
+                                鉂?Cotizaci贸n anulada
                             </div>
                         `;
                     default:
@@ -5506,22 +5506,22 @@
                 
                 document.getElementById('cotizacionesStats').innerHTML = `
                     <div class="stat-card-cotizaciones pendiente">
-                        <div class="stat-icon">�?/div>
+                        <div class="stat-icon">鈴?/div>
                         <div class="stat-value">${pendientes}</div>
                         <div class="stat-description">Pendientes</div>
                     </div>
                     <div class="stat-card-cotizaciones enviada">
-                        <div class="stat-icon">📧</div>
+                        <div class="stat-icon">馃摟</div>
                         <div class="stat-value">${enviadas}</div>
                         <div class="stat-description">Enviadas</div>
                     </div>
                     <div class="stat-card-cotizaciones vendida">
-                        <div class="stat-icon">�?/div>
+                        <div class="stat-icon">鉁?/div>
                         <div class="stat-value">${vendidas}</div>
                         <div class="stat-description">Vendidas</div>
                     </div>
                     <div class="stat-card-cotizaciones anulada">
-                        <div class="stat-icon">�?/div>
+                        <div class="stat-icon">鉂?/div>
                         <div class="stat-value">${anuladas}</div>
                         <div class="stat-description">Anuladas</div>
                     </div>
@@ -5581,21 +5581,21 @@
                 console.log('No se pudieron cargar entradas para precios');
             }
             
-            // Inicializar módulo
+            // Inicializar m贸dulo
             await loadParametros();
             await loadClientes();
             await loadProductos();
             await loadCotizaciones();
             
-            registerAction('Acceso módulo cotizaciones', 'sistema', 'cotizaciones', 'Usuario accedió al módulo de cotizaciones');
+            registerAction('Acceso m贸dulo cotizaciones', 'sistema', 'cotizaciones', 'Usuario accedi贸 al m贸dulo de cotizaciones');
         }
         
         async function showParametros() {
             document.getElementById('menuScreen').style.display = 'none';
             document.getElementById('contentArea').style.display = 'block';
-            document.getElementById('contentTitle').textContent = 'Parámetros';
+            document.getElementById('contentTitle').textContent = 'Par谩metros';
             
-            // Variables globales del módulo
+            // Variables globales del m贸dulo
             let parametrosData = null;
             let zonasList = [];
             let hasChanges = false;
@@ -5606,13 +5606,13 @@
                     <!-- Tabs Navigation -->
                     <div class="parametros-tabs">
                         <button class="tab-button active" onclick="switchTab('empresa')">
-                            🏢 Empresa
+                            馃彚 Empresa
                         </button>
                         <button class="tab-button" onclick="switchTab('zonas')">
-                            📍 Zonas
+                            馃搷 Zonas
                         </button>
                         <button class="tab-button" onclick="switchTab('configuracion')">
-                            ⚙️ Configuración
+                            鈿欙笍 Configuraci贸n
                         </button>
                     </div>
                     
@@ -5620,7 +5620,7 @@
                     <div id="tabEmpresa" class="tab-content active">
                         <div class="config-section">
                             <h3 class="section-title">
-                                🏢 Información de la Empresa
+                                馃彚 Informaci贸n de la Empresa
                             </h3>
                             
                             <div class="form-row">
@@ -5630,7 +5630,7 @@
                                            placeholder="Tool Center" maxlength="100">
                                 </div>
                                 <div class="form-group">
-                                    <label for="correoEmpresa">Correo Electrónico</label>
+                                    <label for="correoEmpresa">Correo Electr贸nico</label>
                                     <input type="email" id="correoEmpresa" class="form-control" 
                                            placeholder="toolcenter.com.co@gmail.com" maxlength="100">
                                 </div>
@@ -5638,14 +5638,14 @@
                             
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="telefonoEmpresa">Teléfono</label>
+                                    <label for="telefonoEmpresa">Tel茅fono</label>
                                     <input type="tel" id="telefonoEmpresa" class="form-control" 
                                            placeholder="314 345 2032" maxlength="20">
                                 </div>
                                 <div class="form-group">
-                                    <label for="direccionEmpresa">Dirección</label>
+                                    <label for="direccionEmpresa">Direcci贸n</label>
                                     <input type="text" id="direccionEmpresa" class="form-control" 
-                                           placeholder="Ibagué, Tolima" maxlength="200">
+                                           placeholder="Ibagu茅, Tolima" maxlength="200">
                                 </div>
                             </div>
                             
@@ -5653,14 +5653,14 @@
                                 <label>Logo de la Empresa</label>
                                 <div class="logo-upload">
                                     <div class="logo-preview" id="logoPreview">
-                                        🏢
+                                        馃彚
                                     </div>
                                     <input type="file" id="logoFile" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
                                     <button type="button" class="btn-upload" onclick="document.getElementById('logoFile').click()">
-                                        📤 Subir Logo
+                                        馃摛 Subir Logo
                                     </button>
                                     <p style="font-size: 12px; color: #6b7280; margin: 0;">
-                                        Formatos: JPG, PNG. Máximo 500KB
+                                        Formatos: JPG, PNG. M谩ximo 500KB
                                     </p>
                                 </div>
                             </div>
@@ -5672,51 +5672,51 @@
                         <div class="config-section">
                             <div class="zonas-header">
                                 <h3 class="section-title">
-                                    📍 Gestión de Zonas
+                                    馃搷 Gesti贸n de Zonas
                                 </h3>
                             </div>
                             
                             <div class="zona-form">
                                 <input type="text" id="nuevaZonaId" placeholder="ID (ej: zona6)" maxlength="10">
                                 <input type="text" id="nuevaZonaNombre" placeholder="Nombre de la zona" maxlength="100">
-                                <button onclick="addZona()">�?Agregar Zona</button>
+                                <button onclick="addZona()">鉃?Agregar Zona</button>
                             </div>
                             
                             <div id="zonasGrid" class="zonas-grid">
-                                <!-- Zonas dinámicas -->
+                                <!-- Zonas din谩micas -->
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Tab: Configuración -->
+                    <!-- Tab: Configuraci贸n -->
                     <div id="tabConfiguracion" class="tab-content">
                         <div class="config-section">
                             <h3 class="section-title">
-                                ⚙️ Configuración del Sistema
+                                鈿欙笍 Configuraci贸n del Sistema
                             </h3>
                             
                             <div class="config-grid">
                                 <div class="config-item">
-                                    <h4>🛒 Cantidad Mayorista</h4>
-                                    <p class="description">Cantidad mínima para aplicar precios al por mayor</p>
+                                    <h4>馃洅 Cantidad Mayorista</h4>
+                                    <p class="description">Cantidad m铆nima para aplicar precios al por mayor</p>
                                     <input type="number" id="cantidadMayorista" min="1" max="100" value="6">
                                 </div>
                                 
                                 <div class="config-item">
-                                    <h4>📅 Validez Cotización</h4>
-                                    <p class="description">Días de validez por defecto para cotizaciones</p>
+                                    <h4>馃搮 Validez Cotizaci贸n</h4>
+                                    <p class="description">D铆as de validez por defecto para cotizaciones</p>
                                     <input type="number" id="validezCotizacion" min="1" max="365" value="30">
                                 </div>
                                 
                                 <div class="config-item">
-                                    <h4>📦 Stock Mínimo</h4>
-                                    <p class="description">Cantidad mínima de stock por defecto para productos</p>
+                                    <h4>馃摝 Stock M铆nimo</h4>
+                                    <p class="description">Cantidad m铆nima de stock por defecto para productos</p>
                                     <input type="number" id="stockMinimo" min="0" max="1000" value="5">
                                 </div>
                                 
                                 <div class="config-item">
-                                    <h4>🔢 Versión Sistema</h4>
-                                    <p class="description">Versión actual del sistema</p>
+                                    <h4>馃敘 Versi贸n Sistema</h4>
+                                    <p class="description">Versi贸n actual del sistema</p>
                                     <input type="text" id="versionSistema" value="1.0" readonly style="background: #f3f4f6;">
                                 </div>
                             </div>
@@ -5726,17 +5726,17 @@
                     <!-- Save Section -->
                     <div class="save-section">
                         <button class="btn-save-parametros" id="btnSaveParametros" onclick="saveParametros()">
-                            <span class="btn-text">💾 Guardar Configuración</span>
+                            <span class="btn-text">馃捑 Guardar Configuraci贸n</span>
                             <span class="loading" style="display: none;"></span>
                         </button>
                         <p style="margin-top: 10px; font-size: 14px; color: #6b7280;">
-                            Los cambios se aplicarán inmediatamente en todo el sistema
+                            Los cambios se aplicar谩n inmediatamente en todo el sistema
                         </p>
                     </div>
                 </div>
             `;
             
-            // Funciones del módulo
+            // Funciones del m贸dulo
             window.switchTab = function(tabName) {
                 // Actualizar botones
                 document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
@@ -5751,9 +5751,9 @@
                 const file = event.target.files[0];
                 if (!file) return;
                 
-                // Validar tamaño (500KB máximo)
+                // Validar tama帽o (500KB m谩ximo)
                 if (file.size > 500 * 1024) {
-                    showNotification('El archivo es muy grande. Máximo 500KB', 'error');
+                    showNotification('El archivo es muy grande. M谩ximo 500KB', 'error');
                     return;
                 }
                 
@@ -5837,7 +5837,7 @@
                 const newStatus = !zona.activa;
                 const action = newStatus ? 'activar' : 'desactivar';
                 
-                if (!confirm(`¿Está seguro de ${action} la zona "${zona.nombre}"?`)) {
+                if (!confirm(`驴Est谩 seguro de ${action} la zona "${zona.nombre}"?`)) {
                     return;
                 }
                 
@@ -5874,26 +5874,26 @@
                 
                 try {
                     if (parametrosData && parametrosData.id) {
-                        // Actualizar parámetros existentes
+                        // Actualizar par谩metros existentes
                         await executeQuery('parametros', 'update', {
                             updates: formData,
                             where: { column: 'id', value: parametrosData.id }
                         });
                     } else {
-                        // Crear nuevos parámetros
+                        // Crear nuevos par谩metros
                         await executeQuery('parametros', 'insert', [{ ...formData, id: 1 }]);
                     }
                     
-                    showNotification('Configuración guardada correctamente', 'success');
-                    await registerAction('Actualizar parámetros', 'parametros', '1', 'Configuración del sistema actualizada');
+                    showNotification('Configuraci贸n guardada correctamente', 'success');
+                    await registerAction('Actualizar par谩metros', 'parametros', '1', 'Configuraci贸n del sistema actualizada');
                     hasChanges = false;
                     
                     // Recargar datos
                     await loadParametros();
                     
                 } catch (error) {
-                    console.error('Error guardando parámetros:', error);
-                    showNotification('Error al guardar configuración: ' + error.message, 'error');
+                    console.error('Error guardando par谩metros:', error);
+                    showNotification('Error al guardar configuraci贸n: ' + error.message, 'error');
                 } finally {
                     showSaveLoading(false);
                 }
@@ -5922,7 +5922,7 @@
                 document.getElementById('nombreEmpresa').value = data.nombre_empresa || 'Tool Center';
                 document.getElementById('correoEmpresa').value = data.correo_empresa || 'toolcenter.com.co@gmail.com';
                 document.getElementById('telefonoEmpresa').value = data.telefono_empresa || '314 345 2032';
-                document.getElementById('direccionEmpresa').value = data.direccion_empresa || 'Ibagué, Tolima';
+                document.getElementById('direccionEmpresa').value = data.direccion_empresa || 'Ibagu茅, Tolima';
                 document.getElementById('cantidadMayorista').value = data.cantidad_mayorista || 6;
                 document.getElementById('validezCotizacion').value = data.validez_cotizacion_dias || 30;
                 document.getElementById('stockMinimo').value = data.stock_minimo_default || 5;
@@ -5933,7 +5933,7 @@
                 if (data.logo_empresa) {
                     logoPreview.innerHTML = `<img src="${data.logo_empresa}" alt="Logo de la empresa">`;
                 } else {
-                    logoPreview.innerHTML = '🏢';
+                    logoPreview.innerHTML = '馃彚';
                 }
             }
             
@@ -5953,7 +5953,7 @@
                     fillParametrosForm(parametros);
                     
                 } catch (error) {
-                    console.error('Error cargando parámetros:', error);
+                    console.error('Error cargando par谩metros:', error);
                     // Usar valores por defecto
                     fillParametrosForm(null);
                 }
@@ -6009,7 +6009,7 @@
                 if (zonasList.length === 0) {
                     container.innerHTML = `
                         <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #6b7280;">
-                            <div style="font-size: 48px; margin-bottom: 10px;">📍</div>
+                            <div style="font-size: 48px; margin-bottom: 10px;">馃搷</div>
                             <h3>No hay zonas configuradas</h3>
                             <p>Agregue la primera zona usando el formulario de arriba</p>
                         </div>
@@ -6032,10 +6032,10 @@
                         
                         <div class="zona-actions">
                             <button class="btn-zona btn-zona-edit" onclick="editZona('${zona.id}')">
-                                ✏️ Editar
+                                鉁忥笍 Editar
                             </button>
                             <button class="btn-zona btn-zona-toggle" onclick="toggleZona('${zona.id}')">
-                                ${zona.activa ? '⏸️ Desactivar' : '▶️ Activar'}
+                                ${zona.activa ? '鈴革笍 Desactivar' : '鈻讹笍 Activar'}
                             </button>
                         </div>
                     </div>
@@ -6076,7 +6076,7 @@
                 }
             });
             
-            // Sugerir próximo ID de zona
+            // Sugerir pr贸ximo ID de zona
             function suggestNextZonaId() {
                 const existingNumbers = zonasList
                     .map(z => parseInt(z.id.replace('zona', '')))
@@ -6095,17 +6095,17 @@
                 document.getElementById('nuevaZonaId').placeholder = `ID (ej: zona${nextNumber})`;
             }
             
-            // Inicializar módulo
+            // Inicializar m贸dulo
             await loadParametros();
             await loadZonas();
             detectChanges();
             suggestNextZonaId();
             
-            registerAction('Acceso módulo parámetros', 'sistema', 'parametros', 'Usuario accedió al módulo de parámetros');
+            registerAction('Acceso m贸dulo par谩metros', 'sistema', 'parametros', 'Usuario accedi贸 al m贸dulo de par谩metros');
         }
         
         async function showInformes() {
-            showContentArea('Informes', 'Función en desarrollo - Reportes y estadísticas');
+            showContentArea('Informes', 'Funci贸n en desarrollo - Reportes y estad铆sticas');
         }
 
         // ============================================
@@ -6115,7 +6115,7 @@
         async function executeQuery(table, action, data) {
             try {
                 if (!isOnlineStatus || !supabase) {
-                    // Guardar para sincronización posterior
+                    // Guardar para sincronizaci贸n posterior
                     await saveOffline(table, { action, data, timestamp: new Date().toISOString() });
                     return { success: true, offline: true };
                 }
@@ -6136,7 +6136,7 @@
                         result = await supabase.from(table).delete().eq(data.column, data.value);
                         break;
                     default:
-                        throw new Error('Acción no válida');
+                        throw new Error('Acci贸n no v谩lida');
                 }
                 
                 if (result.error) throw result.error;
@@ -6174,7 +6174,7 @@
                 return true;
                 
             } catch (error) {
-                console.error('Error en sincronización:', error);
+                console.error('Error en sincronizaci贸n:', error);
                 showNotification('Error al sincronizar datos', 'error');
                 return false;
             }
@@ -6240,9 +6240,9 @@
             
             try {
                 if (isOnlineStatus && supabase) {
-                    // Usar función PostgreSQL
+                    // Usar funci贸n PostgreSQL
                     const { data, error } = await supabase
-                        .rpc('generar_consecutivo_cotizacion', { año_param: year });
+                        .rpc('generar_consecutivo_cotizacion', { a帽o_param: year });
                     
                     if (error) throw error;
                     return data;
@@ -6345,9 +6345,9 @@
         async function handleOnline() {
             isOnlineStatus = true;
             updateConnectionStatus();
-            showNotification('Conexión restablecida', 'success');
+            showNotification('Conexi贸n restablecida', 'success');
             
-            // Intentar sincronización automática
+            // Intentar sincronizaci贸n autom谩tica
             await syncToCloud();
             await syncFromCloud();
         }
@@ -6364,10 +6364,10 @@
             
             if (isOnlineStatus) {
                 dot.classList.remove('offline');
-                status.textContent = 'En línea';
+                status.textContent = 'En l铆nea';
             } else {
                 dot.classList.add('offline');
-                status.textContent = 'Sin conexión';
+                status.textContent = 'Sin conexi贸n';
             }
         }
         
@@ -6377,7 +6377,7 @@
                 hour: '2-digit', 
                 minute: '2-digit' 
             });
-            document.getElementById('lastSync').textContent = `Última sincronización: ${timeString}`;
+            document.getElementById('lastSync').textContent = `脷ltima sincronizaci贸n: ${timeString}`;
             localStorage.setItem('lastSync', now.toISOString());
         }
 
@@ -6403,7 +6403,7 @@
                 }
                 
             } catch (error) {
-                console.error('Error registrando acción:', error);
+                console.error('Error registrando acci贸n:', error);
             }
         }
         
@@ -6413,13 +6413,13 @@
             document.getElementById('contentTitle').textContent = title;
             document.getElementById('contentBody').innerHTML = `
                 <div style="text-align: center; padding: 50px; color: #6b7280;">
-                    <div style="font-size: 48px; margin-bottom: 20px;">🚧</div>
-                    <h3 style="margin-bottom: 10px; color: #374151;">Módulo en Desarrollo</h3>
+                    <div style="font-size: 48px; margin-bottom: 20px;">馃毀</div>
+                    <h3 style="margin-bottom: 10px; color: #374151;">M贸dulo en Desarrollo</h3>
                     <p>${content}</p>
                     <p style="margin-top: 20px; font-size: 14px;">
                         Para continuar el desarrollo, use el comando:<br>
                         <code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; color: #2563eb;">
-                            "Desarrollar función show${title}()"
+                            "Desarrollar funci贸n show${title}()"
                         </code>
                     </p>
                 </div>
@@ -6467,25 +6467,25 @@
         }
         
         // ============================================
-        // FUNCIONES EXPORTADAS PARA PRÓXIMOS CHATS
+        // FUNCIONES EXPORTADAS PARA PR脫XIMOS CHATS
         // ============================================
         
         /*
-        LISTA DE FUNCIONES CREADAS PARA CONTINUAR EN PRÓXIMOS CHATS:
+        LISTA DE FUNCIONES CREADAS PARA CONTINUAR EN PR脫XIMOS CHATS:
 
-        AUTENTICACIÓN:
+        AUTENTICACI脫N:
         - validateLogin()
         - showMenu()
         - logout()
         - registerAction()
 
-        NAVEGACIÓN (MÓDULOS A DESARROLLAR):
-        - showClientes()      �?Desarrollar primero
-        - showProductos()     �?Segundo
-        - showEntradas()      �?Tercero
-        - showCotizaciones()  �?Cuarto
-        - showParametros()    �?Quinto
-        - showInformes()      �?Sexto
+        NAVEGACI脫N (M脫DULOS A DESARROLLAR):
+        - showClientes()      鈫?Desarrollar primero
+        - showProductos()     鈫?Segundo
+        - showEntradas()      鈫?Tercero
+        - showCotizaciones()  鈫?Cuarto
+        - showParametros()    鈫?Quinto
+        - showInformes()      鈫?Sexto
 
         UTILIDADES SUPABASE:
         - executeQuery()
@@ -6504,8 +6504,8 @@
         - saveOffline()
         - getOffline()
 
-        Para continuar en próximos chats, usar:
-        "Desarrollar función showClientes()" (o cualquier función de la lista)
+        Para continuar en pr贸ximos chats, usar:
+        "Desarrollar funci贸n showClientes()" (o cualquier funci贸n de la lista)
         */
         
     </script>
