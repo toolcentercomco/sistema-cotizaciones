@@ -2359,7 +2359,7 @@
         <div id="contentArea" class="content-area">
             <div class="content-header">
                 <h2 class="content-title" id="contentTitle">Módulo</h2>
-                <button class="back-btn" onclick="showMenu()">← Volver al Menú</button>
+                <button class="back-btn" onclick="showMenu()">�?Volver al Menú</button>
             </div>
             <div id="contentBody">
                 <!-- Module content will be loaded here -->
@@ -2393,7 +2393,7 @@
             try {
                 if (typeof window.supabase !== 'undefined') {
                     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                    console.log('✅ Supabase inicializado correctamente');
+                    console.log('�?Supabase inicializado correctamente');
                     return true;
                 } else {
                     console.warn('⚠️ Supabase no disponible, modo offline');
@@ -2979,7 +2979,7 @@
                                     ✏️ Editar
                                 </button>
                                 <button class="btn-action btn-eliminar" onclick="deleteCliente('${cliente.nit}')">
-                                    🗑️ Eliminar
+                                    🗑�?Eliminar
                                 </button>
                             </div>
                         </div>
@@ -3109,7 +3109,7 @@
                                     </div>
                                     <div class="upload-text">
                                         <strong>Clic aquí</strong> o arrastra una imagen<br>
-                                        <span style="font-size: 12px;">JPG, PNG • Máximo 1MB</span>
+                                        <span style="font-size: 12px;">JPG, PNG �?Máximo 1MB</span>
                                     </div>
                                     <input type="file" id="productoImage" accept="image/*" 
                                            style="display: none;" onchange="handleImageSelect(event)">
@@ -3245,7 +3245,7 @@
                     alert.innerHTML = '⚠️ Stock por debajo del mínimo - Alerta de STOCK BAJO';
                 } else {
                     alert.className = 'stock-alert alert-info';
-                    alert.innerHTML = '✅ Stock normal - El producto se mostrará disponible';
+                    alert.innerHTML = '�?Stock normal - El producto se mostrará disponible';
                 }
             };
             
@@ -3509,9 +3509,9 @@
                 container.innerHTML = filteredProductos.map(producto => {
                     const stockStatus = getStockStatus(producto);
                     const stockIcon = {
-                        normal: '✅',
+                        normal: '�?,
                         bajo: '⚠️',
-                        agotado: '❌'
+                        agotado: '�?
                     }[stockStatus];
                     
                     return `
@@ -3545,7 +3545,7 @@
                                         ✏️ Editar
                                     </button>
                                     <button class="btn-producto btn-producto-delete" onclick="deleteProducto('${producto.codigo}')">
-                                        🗑️ Eliminar
+                                        🗑�?Eliminar
                                     </button>
                                 </div>
                             </div>
@@ -3569,7 +3569,7 @@
                     </div>
                     <div class="stat-card success">
                         <div class="stat-number">${stats.activos}</div>
-                        <div class="stat-label">✅ Productos Activos</div>
+                        <div class="stat-label">�?Productos Activos</div>
                     </div>
                     <div class="stat-card warning">
                         <div class="stat-number">${stats.stockBajo}</div>
@@ -3577,7 +3577,7 @@
                     </div>
                     <div class="stat-card danger">
                         <div class="stat-number">${stats.agotado}</div>
-                        <div class="stat-label">❌ Agotados</div>
+                        <div class="stat-label">�?Agotados</div>
                     </div>
                 `;
             }
@@ -4307,7 +4307,7 @@
                             <td style="text-align: center;">
                                 <button class="btn-action btn-editar" onclick="verDetalleEntrada(${entrada.id})" 
                                         style="padding: 4px 8px; font-size: 12px;">
-                                    👁️ Ver
+                                    👁�?Ver
                                 </button>
                             </td>
                         </tr>
@@ -4409,14 +4409,9 @@
                 <div class="cotizaciones-container">
                     <div class="cotizaciones-header">
                         <h2>Gestión de Cotizaciones</h2>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn-secondary" onclick="testPDF()" style="padding: 8px 16px; font-size: 14px;">
-                                🧪 Test PDF
-                            </button>
-                            <button class="btn-nuevo" onclick="openCotizacionModal()">
-                                <span>+ Nueva Cotización</span>
-                            </button>
-                        </div>
+                        <button class="btn-nuevo" onclick="openCotizacionModal()">
+                            <span>+ Nueva Cotización</span>
+                        </button>
                     </div>
                     
                     <!-- Estadísticas -->
@@ -4575,33 +4570,11 @@
                 </div>
             `;
             
-            // Cargar jsPDF dinámicamente al inicializar
-            let jsPDFLoaded = false;
-            
-            async function loadJsPDF() {
-                return new Promise((resolve, reject) => {
-                    if (window.jsPDF) {
-                        jsPDFLoaded = true;
-                        resolve();
-                        return;
-                    }
-                    
-                    const script = document.createElement('script');
-                    script.src = 'https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js';
-                    script.onload = () => {
-                        if (window.jsPDF) {
-                            jsPDFLoaded = true;
-                            console.log('✅ jsPDF cargado correctamente');
-                            resolve();
-                        } else {
-                            reject(new Error('jsPDF no se cargó correctamente'));
-                        }
-                    };
-                    script.onerror = () => {
-                        reject(new Error('Error cargando jsPDF'));
-                    };
-                    document.head.appendChild(script);
-                });
+            // Cargar jsPDF dinámicamente
+            if (!window.jsPDF) {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                document.head.appendChild(script);
             }
             
             // Funciones del módulo
@@ -4913,194 +4886,121 @@
                 showNotification('Función de edición en desarrollo', 'info');
             };
             
-            window.generatePDF = async function(consecutivo) {
-                try {
-                    // Verificar y cargar jsPDF si es necesario
-                    if (!jsPDFLoaded) {
-                        showNotification('Cargando generador de PDF...', 'info');
-                        await loadJsPDF();
-                    }
-                    
-                    const cotizacion = cotizacionesList.find(c => c.consecutivo === consecutivo);
-                    if (!cotizacion) {
-                        showNotification('Cotización no encontrada', 'error');
-                        return;
-                    }
-                    
-                    showNotification('Generando PDF...', 'info');
-                    
-                    // Cargar detalles de la cotización
-                    const detalles = await loadCotizacionDetalles(cotizacion.id_cotizacion);
-                    
-                    if (detalles.length === 0) {
-                        showNotification('No se encontraron productos en la cotización', 'error');
-                        return;
-                    }
-                    
-                    // Generar PDF
-                    const { jsPDF } = window.jsPDF;
-                    const doc = new jsPDF();
-                    
-                    // Configurar fuente
-                    doc.setFont('helvetica');
-                    
-                    // Header - Logo de empresa (si existe)
-                    let yPosition = 20;
-                    
-                    if (parametrosEmpresa?.logo_empresa) {
-                        try {
-                            doc.addImage(parametrosEmpresa.logo_empresa, 'JPEG', 85, 10, 40, 40);
-                            yPosition = 60;
-                        } catch (e) {
-                            console.log('No se pudo agregar el logo');
-                            yPosition = 30;
-                        }
-                    }
-                    
-                    // Título principal
-                    doc.setFontSize(24);
-                    doc.setTextColor(37, 99, 235); // Azul corporativo
-                    doc.text('COTIZACIÓN', 105, yPosition, { align: 'center' });
-                    yPosition += 20;
-                    
-                    // Información de empresa
-                    doc.setFontSize(12);
-                    doc.setTextColor(40, 40, 40);
-                    doc.text(parametrosEmpresa?.nombre_empresa || 'Tool Center', 20, yPosition);
-                    doc.text(parametrosEmpresa?.direccion_empresa || 'Ibagué, Tolima', 20, yPosition + 10);
-                    doc.text(`Tel: ${parametrosEmpresa?.telefono_empresa || '314 345 2032'}`, 20, yPosition + 20);
-                    
-                    // Fecha y número de cotización
-                    const fechaFormateada = formatDate(cotizacion.fecha_hora);
-                    doc.text(`Fecha: ${fechaFormateada}`, 130, yPosition);
-                    doc.setFontSize(14);
-                    doc.setTextColor(37, 99, 235);
-                    doc.text(`No. ${consecutivo}`, 130, yPosition + 15);
-                    
-                    yPosition += 40;
-                    
-                    // Información del cliente
-                    doc.setFontSize(12);
-                    doc.setTextColor(40, 40, 40);
-                    doc.text(`Señor(a): ${cotizacion.nombre_cliente}`, 20, yPosition);
-                    yPosition += 15;
-                    doc.text('Cordial saludo', 20, yPosition);
-                    yPosition += 15;
-                    doc.text('Anexo cotización según lista:', 20, yPosition);
-                    yPosition += 20;
-                    
-                    // Línea separadora
-                    doc.setDrawColor(200, 200, 200);
-                    doc.line(20, yPosition, 190, yPosition);
-                    yPosition += 15;
-                    
-                    // Headers de tabla
-                    doc.setFontSize(10);
-                    doc.setTextColor(60, 60, 60);
-                    doc.setFont('helvetica', 'bold');
-                    
-                    doc.text('PRODUCTO', 20, yPosition);
-                    doc.text('CANT.', 110, yPosition, { align: 'center' });
-                    doc.text('VALOR UNIT.', 135, yPosition, { align: 'center' });
-                    doc.text('SUBTOTAL', 170, yPosition, { align: 'center' });
-                    
-                    // Línea bajo headers
-                    doc.setDrawColor(150, 150, 150);
-                    doc.line(20, yPosition + 2, 190, yPosition + 2);
-                    yPosition += 15;
-                    
-                    // Productos
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(9);
-                    doc.setTextColor(40, 40, 40);
-                    
-                    for (const detalle of detalles) {
-                        // Verificar si necesitamos nueva página
-                        if (yPosition > 250) {
-                            doc.addPage();
-                            yPosition = 30;
-                        }
-                        
-                        // Nombre del producto (máximo 60 caracteres)
-                        const nombreProducto = detalle.nombre_producto.length > 60 
-                            ? detalle.nombre_producto.substring(0, 57) + '...'
-                            : detalle.nombre_producto;
-                        
-                        doc.text(nombreProducto, 20, yPosition);
-                        doc.text(detalle.cantidad.toString(), 110, yPosition, { align: 'center' });
-                        doc.text(formatCurrency(detalle.valor_unitario), 135, yPosition, { align: 'center' });
-                        doc.text(formatCurrency(detalle.subtotal), 170, yPosition, { align: 'center' });
-                        
-                        yPosition += 12;
-                    }
-                    
-                    // Línea antes del total
-                    yPosition += 10;
-                    doc.setDrawColor(150, 150, 150);
-                    doc.line(120, yPosition, 190, yPosition);
-                    yPosition += 15;
-                    
-                    // Total
-                    doc.setFontSize(14);
-                    doc.setFont('helvetica', 'bold');
-                    doc.setTextColor(37, 99, 235);
-                    doc.text('TOTAL:', 130, yPosition);
-                    doc.text(formatCurrency(cotizacion.total), 170, yPosition, { align: 'center' });
-                    
-                    yPosition += 25;
-                    
-                    // Validez de la cotización
-                    doc.setFontSize(9);
-                    doc.setFont('helvetica', 'normal');
-                    doc.setTextColor(100, 100, 100);
-                    const validezDias = parametrosEmpresa?.validez_cotizacion_dias || 30;
-                    doc.text(`Cotización válida por ${validezDias} días`, 20, yPosition);
-                    
-                    yPosition += 20;
-                    
-                    // Footer
-                    doc.setFontSize(11);
-                    doc.setTextColor(40, 40, 40);
-                    doc.text('Cordialmente,', 20, yPosition);
-                    yPosition += 15;
-                    doc.setFont('helvetica', 'bold');
-                    doc.text('Jorge Luis Hernández', 20, yPosition);
-                    yPosition += 10;
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(10);
-                    doc.text('Celular: 314 345 2032', 20, yPosition);
-                    doc.text(`Email: ${parametrosEmpresa?.correo_empresa || 'toolcenter.com.co@gmail.com'}`, 20, yPosition + 10);
-                    
-                    // Generar nombre del archivo
-                    const clienteNombre = cotizacion.nombre_cliente.replace(/[^a-zA-Z0-9]/g, '_');
-                    const fechaArchivo = fechaFormateada.replace(/\//g, '-');
-                    const nombreArchivo = `cotizacion_${clienteNombre}_${fechaArchivo}.pdf`;
-                    
-                    // Descargar PDF
-                    doc.save(nombreArchivo);
-                    
-                    showNotification('PDF generado y descargado correctamente', 'success');
-                    
-                    // Registrar acción
-                    await registerAction(
-                        'Generar PDF cotización',
-                        'cotizaciones',
-                        consecutivo,
-                        `PDF generado para ${cotizacion.nombre_cliente}`
-                    );
-                    
-                } catch (error) {
-                    console.error('Error generando PDF:', error);
-                    showNotification('Error al generar PDF: ' + error.message, 'error');
-                    
-                    // Mostrar información de debug
-                    console.log('Información de debug:');
-                    console.log('jsPDFLoaded:', jsPDFLoaded);
-                    console.log('window.jsPDF:', !!window.jsPDF);
-                    console.log('Cotización:', cotizacion);
-                }
-            };
+         window.generatePDF = async function(consecutivo) {
+    try {
+        // Verificaciones previas de jsPDF (como en el c��digo anterior)
+
+        const cotizacion = cotizacionesList.find(c => c.consecutivo === consecutivo);
+        if (!cotizacion) return;
+
+        // Cargar detalles de la cotizaci��n
+        const detalles = await loadCotizacionDetalles(cotizacion.id_cotizacion);
+
+        // Crear documento PDF
+        const doc = new jsPDF();
+
+        // Agregar logo si existe
+        if (parametrosEmpresa?.logo_empresa) {
+            try {
+                const logoImg = await loadBase64Image(parametrosEmpresa.logo_empresa);
+                const canvas = document.createElement('canvas');
+                canvas.width = logoImg.width;
+                canvas.height = logoImg.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(logoImg, 0, 0);
+                const resizedLogo = canvas.toDataURL('image/jpeg', 0.5);
+                
+                doc.addImage(resizedLogo, 'JPEG', 10, 10, 40, 40);
+            } catch (logoError) {
+                console.warn('Error procesando logo:', logoError);
+            }
+        }
+
+        // Resto de la generaci��n de PDF (como estaba en tu c��digo original)
+        doc.setFont('helvetica');
+        doc.setFontSize(20);
+        doc.text('COTIZACI��N', 105, 60, { align: 'center' });
+
+        // Informaci��n de empresa
+        doc.setFontSize(12);
+        doc.text(parametrosEmpresa?.nombre_empresa || 'Tool Center', 20, 80);
+        doc.text(`Ibagu��, ${formatDate(cotizacion.fecha_hora)}`, 20, 90);
+
+        // N��mero de cotizaci��n
+        doc.setFontSize(14);
+        doc.setTextColor(0, 100, 200);
+        doc.text(`${consecutivo}`, 150, 80);
+
+        // Informaci��n del cliente
+        doc.setFontSize(12);
+        doc.setTextColor(40, 40, 40);
+        doc.text(`Se?or(a): ${cotizacion.nombre_cliente}`, 20, 110);
+        doc.text('Cordial saludo', 20, 125);
+        doc.text('Anexo cotizaci��n seg��n lista:', 20, 140);
+
+        // Tabla de productos (resto del c��digo como estaba)
+        let yPosition = 160;
+        
+        // Headers
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('PRODUCTO', 20, yPosition);
+        doc.text('CANT.', 120, yPosition);
+        doc.text('VALOR UNIT.', 140, yPosition);
+        doc.text('SUBTOTAL', 170, yPosition);
+        
+        yPosition += 10;
+        
+        // Productos
+        doc.setFontSize(9);
+        doc.setTextColor(40, 40, 40);
+        
+        for (const detalle of detalles) {
+            if (yPosition > 250) {
+                doc.addPage();
+                yPosition = 30;
+            }
             
+            doc.text(detalle.nombre_producto, 20, yPosition);
+            doc.text(detalle.cantidad.toString(), 120, yPosition);
+            doc.text(formatCurrency(detalle.valor_unitario), 140, yPosition);
+            doc.text(formatCurrency(detalle.subtotal), 170, yPosition);
+            
+            yPosition += 10;
+        }
+        
+        // Total
+        yPosition += 10;
+        doc.setFontSize(12);
+        doc.setTextColor(40, 40, 40);
+        doc.text(`TOTAL: ${formatCurrency(cotizacion.total)}`, 140, yPosition);
+        
+        // Footer
+        yPosition += 30;
+        doc.setFontSize(10);
+        doc.text('Cordialmente,', 20, yPosition);
+        doc.text('Jorge Luis Hern��ndez', 20, yPosition + 15);
+        doc.text('Celular: 314 345 2032', 20, yPosition + 25);
+        
+        // Descargar PDF
+        doc.save(`cotizacion_${cotizacion.nombre_cliente}_${formatDate(cotizacion.fecha_hora).replace(/\//g, '-')}.pdf`);
+        
+        showNotification('PDF generado correctamente', 'success');
+        
+    } catch (error) {
+        console.error('Error generando PDF:', error);
+        showNotification('Error al generar PDF: ' + error.message, 'error');
+    }
+};  
+            
+			function loadBase64Image(base64) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = base64;
+    });
+}
             window.confirmarVenta = async function(consecutivo) {
                 const cotizacion = cotizacionesList.find(c => c.consecutivo === consecutivo);
                 if (!cotizacion) return;
@@ -5204,71 +5104,6 @@
                     showNotification('Error al anular cotización: ' + error.message, 'error');
                 }
             };
-
-            window.testPDF = function() {
-                try {
-                    if (!jsPDFLoaded || !window.jsPDF) {
-                        showNotification('jsPDF no está cargado. Intente recargar la página.', 'error');
-                        console.log('Estado jsPDF:', {
-                            jsPDFLoaded: jsPDFLoaded,
-                            windowJsPDF: !!window.jsPDF
-                        });
-                        return;
-                    }
-                    
-                    const { jsPDF } = window.jsPDF;
-                    const doc = new jsPDF();
-                    
-                    doc.setFontSize(20);
-                    doc.text('PDF de Prueba', 20, 20);
-                    doc.setFontSize(12);
-                    doc.text('Si puedes ver este PDF, jsPDF funciona correctamente.', 20, 40);
-                    doc.text(`Generado: ${new Date().toLocaleString()}`, 20, 60);
-                    
-                    doc.save('test-pdf.pdf');
-                    showNotification('PDF de prueba generado correctamente', 'success');
-                    
-                } catch (error) {
-                    console.error('Error en test PDF:', error);
-                    showNotification('Error generando PDF de prueba: ' + error.message, 'error');
-                }
-            };
-                const cotizacion = cotizacionesList.find(c => c.consecutivo === consecutivo);
-                if (!cotizacion) return;
-                
-                if (cotizacion.estado === 'Vendida') {
-                    showNotification('No se puede anular una cotización vendida', 'error');
-                    return;
-                }
-                
-                const motivo = prompt('Motivo de anulación:');
-                if (!motivo) return;
-                
-                try {
-                    await executeQuery('cotizaciones', 'update', {
-                        updates: { 
-                            estado: 'Anulada',
-                            motivo_anulacion: motivo 
-                        },
-                        where: { column: 'consecutivo', value: consecutivo }
-                    });
-                    
-                    showNotification('Cotización anulada correctamente', 'success');
-                    
-                    await registerAction(
-                        'Anular cotización',
-                        'cotizaciones',
-                        consecutivo,
-                        `Motivo: ${motivo}`
-                    );
-                    
-                    await loadCotizaciones();
-                    
-                } catch (error) {
-                    console.error('Error anulando cotización:', error);
-                    showNotification('Error al anular cotización: ' + error.message, 'error');
-                }
-            };
             
             // Funciones auxiliares
             function resetCotizacionForm() {
@@ -5330,7 +5165,7 @@
                 dropdown.innerHTML = clientes.map(cliente => `
                     <div class="cliente-option" onclick="selectCliente('${cliente.nit}')">
                         <div class="cliente-option-nombre">${cliente.nombre}</div>
-                        <div class="cliente-option-nit">NIT: ${cliente.nit} ${cliente.zona ? `• ${cliente.zona}` : ''}</div>
+                        <div class="cliente-option-nit">NIT: ${cliente.nit} ${cliente.zona ? `�?${cliente.zona}` : ''}</div>
                     </div>
                 `).join('');
             }
@@ -5358,7 +5193,7 @@
                         <div style="flex: 1;">
                             <div style="font-weight: 500; color: #1f2937;">${producto.nombre}</div>
                             <div style="font-size: 12px; color: #6b7280;">
-                                ${producto.codigo} • Stock: ${producto.stock_actual}
+                                ${producto.codigo} �?Stock: ${producto.stock_actual}
                             </div>
                         </div>
                     </div>
@@ -5399,7 +5234,7 @@
                         </div>
                         <div class="cantidad-controls">
                             <button class="btn-cantidad" onclick="updateCantidadProducto('${producto.codigo}', ${producto.cantidad - 1})">
-                                −
+                                �?
                             </button>
                             <input type="number" class="cantidad-input" value="${producto.cantidad}" min="1" 
                                    onchange="updateCantidadProducto('${producto.codigo}', parseInt(this.value))">
@@ -5412,7 +5247,7 @@
                                 ${formatCurrency(producto.subtotal)}
                             </div>
                             <button class="btn-eliminar-producto" onclick="removeProductoFromCotizacion('${producto.codigo}')">
-                                🗑️
+                                🗑�?
                             </button>
                         </div>
                     </div>
@@ -5453,7 +5288,7 @@
                             <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 8px; padding: 8px; background: white; border-radius: 4px;">
                                 <div style="flex: 1;">
                                     <strong>${p.nombre}</strong><br>
-                                    <span style="font-size: 12px; color: #6b7280;">${p.codigo} • ${p.cantidad} unidades</span>
+                                    <span style="font-size: 12px; color: #6b7280;">${p.codigo} �?${p.cantidad} unidades</span>
                                 </div>
                                 <div style="text-align: right;">
                                     <div>${formatCurrency(p.subtotal)}</div>
@@ -5643,28 +5478,28 @@
                     case 'Pendiente':
                         return baseActions + `
                             <button class="btn-cotizacion btn-cotizacion-confirmar" onclick="confirmarVenta('${cotizacion.consecutivo}')">
-                                ✅ Confirmar Venta
+                                �?Confirmar Venta
                             </button>
                             <button class="btn-cotizacion btn-cotizacion-anular" onclick="anularCotizacion('${cotizacion.consecutivo}')">
-                                ❌ Anular
+                                �?Anular
                             </button>
                         `;
                     case 'Enviada':
                         return baseActions + `
                             <button class="btn-cotizacion btn-cotizacion-confirmar" onclick="confirmarVenta('${cotizacion.consecutivo}')">
-                                ✅ Confirmar Venta
+                                �?Confirmar Venta
                             </button>
                         `;
                     case 'Vendida':
                         return baseActions + `
                             <div style="color: #059669; font-size: 12px; text-align: center; padding: 8px;">
-                                ✅ Venta confirmada
+                                �?Venta confirmada
                             </div>
                         `;
                     case 'Anulada':
                         return baseActions + `
                             <div style="color: #dc2626; font-size: 12px; text-align: center; padding: 8px;">
-                                ❌ Cotización anulada
+                                �?Cotización anulada
                             </div>
                         `;
                     default:
@@ -5680,7 +5515,7 @@
                 
                 document.getElementById('cotizacionesStats').innerHTML = `
                     <div class="stat-card-cotizaciones pendiente">
-                        <div class="stat-icon">⏳</div>
+                        <div class="stat-icon">�?/div>
                         <div class="stat-value">${pendientes}</div>
                         <div class="stat-description">Pendientes</div>
                     </div>
@@ -5690,12 +5525,12 @@
                         <div class="stat-description">Enviadas</div>
                     </div>
                     <div class="stat-card-cotizaciones vendida">
-                        <div class="stat-icon">✅</div>
+                        <div class="stat-icon">�?/div>
                         <div class="stat-value">${vendidas}</div>
                         <div class="stat-description">Vendidas</div>
                     </div>
                     <div class="stat-card-cotizaciones anulada">
-                        <div class="stat-icon">❌</div>
+                        <div class="stat-icon">�?/div>
                         <div class="stat-value">${anuladas}</div>
                         <div class="stat-description">Anuladas</div>
                     </div>
@@ -5756,28 +5591,10 @@
             }
             
             // Inicializar módulo
-            try {
-                // Cargar jsPDF al inicializar el módulo
-                showNotification('Preparando generador de PDF...', 'info');
-                await loadJsPDF();
-                
-                await loadParametros();
-                await loadClientes();
-                await loadProductos();
-                await loadCotizaciones();
-                
-                showNotification('Módulo de cotizaciones listo', 'success');
-                
-            } catch (error) {
-                console.error('Error inicializando módulo:', error);
-                showNotification('Módulo cargado (PDF no disponible)', 'warning');
-                
-                // Continuar sin PDF
-                await loadParametros();
-                await loadClientes();
-                await loadProductos();
-                await loadCotizaciones();
-            }
+            await loadParametros();
+            await loadClientes();
+            await loadProductos();
+            await loadCotizaciones();
             
             registerAction('Acceso módulo cotizaciones', 'sistema', 'cotizaciones', 'Usuario accedió al módulo de cotizaciones');
         }
@@ -5871,7 +5688,7 @@
                             <div class="zona-form">
                                 <input type="text" id="nuevaZonaId" placeholder="ID (ej: zona6)" maxlength="10">
                                 <input type="text" id="nuevaZonaNombre" placeholder="Nombre de la zona" maxlength="100">
-                                <button onclick="addZona()">➕ Agregar Zona</button>
+                                <button onclick="addZona()">�?Agregar Zona</button>
                             </div>
                             
                             <div id="zonasGrid" class="zonas-grid">
@@ -6672,12 +6489,12 @@
         - registerAction()
 
         NAVEGACIÓN (MÓDULOS A DESARROLLAR):
-        - showClientes()      ← Desarrollar primero
-        - showProductos()     ← Segundo
-        - showEntradas()      ← Tercero
-        - showCotizaciones()  ← Cuarto
-        - showParametros()    ← Quinto
-        - showInformes()      ← Sexto
+        - showClientes()      �?Desarrollar primero
+        - showProductos()     �?Segundo
+        - showEntradas()      �?Tercero
+        - showCotizaciones()  �?Cuarto
+        - showParametros()    �?Quinto
+        - showInformes()      �?Sexto
 
         UTILIDADES SUPABASE:
         - executeQuery()
