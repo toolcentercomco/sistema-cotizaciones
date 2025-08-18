@@ -5,18 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Cotizaciones - Tool Center</title>
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiU2lzdGVtYSBkZSBDb3RpemFjaW9uZXMiLCJzaG9ydF9uYW1lIjoiQ290aXphY2lvbmVzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmZmZmZmYiLCJ0aGVtZV9jb2xvciI6IiMyNTYzZWIiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBZ01DQXlOQ0F5TkNJK1BIQmhkR2dnWkQwaWJUTWdOQ0JqTXlBd0lEWXRNeUEwTFRNeUlEUklNVTVqTVMwd0lEWWdNeUEwV2cwM0lERXdZeTF3SURZZ015QTBMVEZpTURRek5VNXpNUzB3SURZZ015QTBXaTA0TVNBd0lERWlJR1pwYkdFOUlpTXlOVVl6WldJaUx6NDhMM04yWno0PSIsInNpemVzIjoiMjR4MjQiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
-    
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- jsPDF para generar PDFs -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <!-- EmailJS para envío de correos -->
-    <script src="https://cdn.emailjs.com/sdk/2.6.4/email.min.js"></script>
-    
     <style>
         * {
             margin: 0;
@@ -25,10 +13,11 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #333;
         }
 
         .container {
@@ -37,7 +26,7 @@
             padding: 20px;
         }
 
-        /* Login Screen */
+        /* LOGIN STYLES */
         .login-container {
             display: flex;
             justify-content: center;
@@ -49,8 +38,8 @@
         .login-card {
             background: white;
             padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             width: 100%;
             max-width: 400px;
             text-align: center;
@@ -59,13 +48,20 @@
         .logo {
             width: 80px;
             height: 80px;
-            margin: 0 auto 20px;
             background: #2563eb;
             border-radius: 50%;
+            margin: 0 auto 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .login-title {
+            color: #2563eb;
+            margin-bottom: 30px;
             font-size: 24px;
             font-weight: bold;
         }
@@ -75,23 +71,23 @@
             text-align: left;
         }
 
-        label {
+        .form-group label {
             display: block;
             margin-bottom: 5px;
-            font-weight: 600;
-            color: #374151;
+            color: #555;
+            font-weight: 500;
         }
 
-        input, select, textarea {
+        .form-control {
             width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
             border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s;
         }
 
-        input:focus, select:focus, textarea:focus {
+        .form-control:focus {
             outline: none;
             border-color: #2563eb;
         }
@@ -103,217 +99,143 @@
             padding: 12px 24px;
             border-radius: 8px;
             font-size: 16px;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: background 0.3s;
             width: 100%;
+            font-weight: 500;
         }
 
         .btn:hover {
             background: #1d4ed8;
-            transform: translateY(-2px);
         }
 
-        .btn-secondary {
-            background: #6b7280;
+        .btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
         }
 
-        .btn-secondary:hover {
-            background: #4b5563;
-        }
-
-        .btn-success {
-            background: #059669;
-        }
-
-        .btn-success:hover {
-            background: #047857;
-        }
-
-        .btn-danger {
-            background: #dc2626;
-        }
-
-        .btn-danger:hover {
-            background: #b91c1c;
-        }
-
-        /* Main App */
-        .app-container {
+        /* MENU STYLES */
+        .menu-container {
             display: none;
+            min-height: 100vh;
+            background: white;
         }
 
         .header {
-            background: white;
+            background: #2563eb;
+            color: white;
             padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
         }
 
         .user-info {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+        }
+
+        .status-bar {
+            background: #1e40af;
+            color: white;
+            padding: 8px 20px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-indicator {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 5px;
         }
 
-        .connection-status {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
         }
 
-        .online {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .offline {
-            background: #fef2f2;
-            color: #dc2626;
+        .status-dot.offline {
+            background: #ef4444;
         }
 
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
+            padding: 30px 20px;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .menu-item {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px 20px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
-            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .menu-item:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
             border-color: #2563eb;
         }
 
-        .menu-icon {
+        .menu-item .icon {
             font-size: 48px;
             margin-bottom: 15px;
-            display: block;
+            color: #2563eb;
         }
 
-        .menu-title {
+        .menu-item .title {
             font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 5px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 8px;
         }
 
-        .menu-description {
-            color: #6b7280;
+        .menu-item .description {
             font-size: 14px;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 15px;
-            max-width: 800px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .modal-footer {
-            padding: 20px;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
             color: #6b7280;
         }
 
-        /* Tables */
-        .table-container {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            position: absolute;
+            top: 20px;
+            left: 20px;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .logout-btn:hover {
+            background: #dc2626;
         }
 
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        th {
-            background: #f9fafb;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        tr:hover {
-            background: #f9fafb;
-        }
-
-        /* Search and filters */
-        .search-bar {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .search-input {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        /* Notifications */
+        /* NOTIFICATION STYLES */
         .notification {
             position: fixed;
             top: 20px;
@@ -321,461 +243,332 @@
             padding: 15px 20px;
             border-radius: 8px;
             color: white;
-            font-weight: 600;
-            z-index: 1001;
-            max-width: 400px;
-            animation: slideIn 0.3s ease;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
         }
 
         .notification.success {
-            background: #059669;
+            background: #10b981;
         }
 
         .notification.error {
-            background: #dc2626;
+            background: #ef4444;
         }
 
         .notification.info {
-            background: #2563eb;
+            background: #3b82f6;
         }
 
         .notification.warning {
-            background: #d97706;
+            background: #f59e0b;
         }
 
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        /* CONTENT AREA */
+        .content-area {
+            display: none;
+            padding: 20px;
+            min-height: calc(100vh - 120px);
         }
 
-        /* Responsive */
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .content-title {
+            font-size: 24px;
+            color: #1f2937;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            background: #4b5563;
+        }
+
+        /* RESPONSIVE */
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
             }
 
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
+            .login-card {
+                padding: 30px 20px;
             }
 
             .menu-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                grid-template-columns: 1fr;
                 gap: 15px;
+                padding: 20px 15px;
             }
 
             .menu-item {
-                padding: 20px;
+                padding: 25px 15px;
             }
 
-            .menu-icon {
-                font-size: 36px;
+            .menu-item .icon {
+                font-size: 40px;
             }
 
-            .modal-content {
-                margin: 10px;
-                max-height: 95vh;
+            .user-info {
+                position: static;
+                transform: none;
+                margin-top: 10px;
             }
 
-            .search-bar {
-                flex-direction: column;
+            .header {
+                text-align: left;
             }
 
-            .search-input {
-                min-width: auto;
-            }
-        }
-
-        /* Utility classes */
-        .hidden {
-            display: none !important;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .mb-20 {
-            margin-bottom: 20px;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .grid-2 {
-                grid-template-columns: 1fr;
+            .logout-btn {
+                position: static;
+                margin-top: 15px;
+                width: 100%;
             }
         }
 
-        /* Loading spinner */
-        .spinner {
-            border: 3px solid #f3f4f6;
-            border-top: 3px solid #2563eb;
+        /* LOADING STYLES */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-        }
-
-        /* Product grid for quotations */
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .product-card {
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .product-card:hover {
-            border-color: #2563eb;
-            transform: translateY(-2px);
-        }
-
-        .product-card.selected {
-            border-color: #2563eb;
-            background: #eff6ff;
-        }
-
-        .product-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            object-fit: cover;
-            margin: 0 auto 10px;
-            display: block;
-            background: #f3f4f6;
-        }
-
-        .quantity-controls {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .qty-btn {
-            width: 30px;
-            height: 30px;
-            border: 1px solid #d1d5db;
-            background: white;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        .qty-btn:hover {
-            background: #f3f4f6;
-        }
-
-        .qty-input {
-            width: 60px;
-            text-align: center;
-            border: 1px solid #d1d5db;
-            border-radius: 5px;
-            padding: 5px;
-        }
-
-        /* Quotation summary */
-        .quotation-summary {
-            background: #f9fafb;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .quotation-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .quotation-item:last-child {
-            border-bottom: none;
-        }
-
-        .item-info {
-            flex: 1;
-        }
-
-        .item-name {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .item-details {
-            font-size: 14px;
-            color: #6b7280;
-        }
-
-        .item-total {
-            font-weight: 600;
-            color: #2563eb;
-        }
-
-        .delete-btn {
-            background: #dc2626;
-            color: white;
-            border: none;
-            border-radius: 5px;
+        /* VERSION INFO */
+        .version-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            background: rgba(0,0,0,0.3);
             padding: 5px 10px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-
-        .delete-btn:hover {
-            background: #b91c1c;
-        }
-
-        .total-row {
-            font-size: 18px;
-            font-weight: bold;
-            color: #1f2937;
-            padding-top: 15px;
-            margin-top: 15px;
-            border-top: 2px solid #d1d5db;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
-    <!-- Login Screen -->
+    <!-- LOGIN SCREEN -->
     <div id="loginScreen" class="login-container">
         <div class="login-card">
             <div class="logo">TC</div>
-            <h2>Sistema de Cotizaciones</h2>
-            <p style="color: #6b7280; margin-bottom: 30px;">Tool Center - Ibagué</p>
+            <h2 class="login-title">Tool Center</h2>
+            <p style="color: #6b7280; margin-bottom: 30px;">Sistema de Cotizaciones</p>
             
             <form id="loginForm">
                 <div class="form-group">
                     <label for="username">Usuario</label>
-                    <input type="text" id="username" name="username" value="jhernandez" required>
+                    <input type="text" id="username" class="form-control" required autocomplete="username">
                 </div>
                 
                 <div class="form-group">
                     <label for="password">Contraseña</label>
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" class="form-control" required autocomplete="current-password">
                 </div>
                 
-                <button type="submit" class="btn">Iniciar Sesión</button>
+                <button type="submit" id="loginBtn" class="btn">
+                    <span class="btn-text">Iniciar Sesión</span>
+                    <span class="loading" style="display: none;"></span>
+                </button>
             </form>
-            
-            <div style="margin-top: 20px; font-size: 12px; color: #6b7280;">
-                Versión 1.0 | <span id="connectionStatus">Verificando conexión...</span>
+        </div>
+    </div>
+
+    <!-- MAIN APPLICATION -->
+    <div id="mainApp" class="menu-container">
+        <!-- HEADER -->
+        <div class="header">
+            <button class="logout-btn" onclick="logout()">🚪 Cerrar Sesión</button>
+            <h1>Tool Center</h1>
+            <p class="subtitle">Sistema de Cotizaciones</p>
+            <div class="user-info">
+                <div>👤 <span id="currentUser">Jorge Luis Hernández</span></div>
+                <div style="font-size: 12px; margin-top: 2px;">Administrador</div>
+            </div>
+        </div>
+
+        <!-- STATUS BAR -->
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="connectionDot"></div>
+                <span id="connectionStatus">En línea</span>
+            </div>
+            <div>
+                <span id="lastSync">Última sincronización: --:--</span>
+            </div>
+        </div>
+
+        <!-- MENU GRID -->
+        <div id="menuScreen">
+            <div class="menu-grid">
+                <div class="menu-item" onclick="showClientes()">
+                    <div class="icon">👥</div>
+                    <div class="title">Clientes</div>
+                    <div class="description">Gestionar información de clientes y zonas</div>
+                </div>
+
+                <div class="menu-item" onclick="showProductos()">
+                    <div class="icon">📦</div>
+                    <div class="title">Productos</div>
+                    <div class="description">Catálogo de productos y control de stock</div>
+                </div>
+
+                <div class="menu-item" onclick="showEntradas()">
+                    <div class="icon">📋</div>
+                    <div class="title">Entradas</div>
+                    <div class="description">Registro de entradas y devoluciones</div>
+                </div>
+
+                <div class="menu-item" onclick="showCotizaciones()">
+                    <div class="icon">💰</div>
+                    <div class="title">Cotizaciones</div>
+                    <div class="description">Crear y gestionar cotizaciones</div>
+                </div>
+
+                <div class="menu-item" onclick="showParametros()">
+                    <div class="icon">⚙️</div>
+                    <div class="title">Parámetros</div>
+                    <div class="description">Configuración del sistema y empresa</div>
+                </div>
+
+                <div class="menu-item" onclick="showInformes()">
+                    <div class="icon">📊</div>
+                    <div class="title">Informes</div>
+                    <div class="description">Reportes y estadísticas</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENT AREA (for modules) -->
+        <div id="contentArea" class="content-area">
+            <div class="content-header">
+                <h2 class="content-title" id="contentTitle">Módulo</h2>
+                <button class="back-btn" onclick="showMenu()">← Volver al Menú</button>
+            </div>
+            <div id="contentBody">
+                <!-- Module content will be loaded here -->
             </div>
         </div>
     </div>
 
-    <!-- Main Application -->
-    <div id="appContainer" class="app-container">
-        <div class="container">
-            <!-- Header -->
-            <div class="header">
-                <div class="user-info">
-                    <div class="logo" style="width: 50px; height: 50px; font-size: 16px;">TC</div>
-                    <div>
-                        <h2>Sistema de Cotizaciones</h2>
-                        <p style="color: #6b7280;">Bienvenido, <span id="userName">Jorge Luis Hernández</span></p>
-                    </div>
-                </div>
-                
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div id="connectionStatusApp" class="connection-status online">🟢 En línea</div>
-                    <button class="btn btn-secondary" onclick="logout()">Cerrar Sesión</button>
-                </div>
-            </div>
+    <!-- NOTIFICATION CONTAINER -->
+    <div id="notification" class="notification"></div>
 
-            <!-- Main Menu -->
-            <div id="mainMenu" class="menu-grid">
-                <div class="menu-item" onclick="openModule('clientes')">
-                    <span class="menu-icon">👥</span>
-                    <div class="menu-title">Clientes</div>
-                    <div class="menu-description">Gestionar información de clientes</div>
-                </div>
+    <!-- VERSION INFO -->
+    <div class="version-info">v1.0 - Sistema de Cotizaciones</div>
 
-                <div class="menu-item" onclick="openModule('productos')">
-                    <span class="menu-icon">📦</span>
-                    <div class="menu-title">Productos</div>
-                    <div class="menu-description">Catálogo y control de inventario</div>
-                </div>
-
-                <div class="menu-item" onclick="openModule('entradas')">
-                    <span class="menu-icon">📥</span>
-                    <div class="menu-title">Entradas</div>
-                    <div class="menu-description">Registrar entradas y devoluciones</div>
-                </div>
-
-                <div class="menu-item" onclick="openModule('cotizaciones')">
-                    <span class="menu-icon">💰</span>
-                    <div class="menu-title">Cotizaciones</div>
-                    <div class="menu-description">Crear y gestionar cotizaciones</div>
-                </div>
-
-                <div class="menu-item" onclick="openModule('parametros')">
-                    <span class="menu-icon">⚙️</span>
-                    <div class="menu-title">Parámetros</div>
-                    <div class="menu-description">Configuración del sistema</div>
-                </div>
-
-                <div class="menu-item" onclick="openModule('informes')">
-                    <span class="menu-icon">📊</span>
-                    <div class="menu-title">Informes</div>
-                    <div class="menu-description">Reportes y estadísticas</div>
-                </div>
-            </div>
-
-            <!-- Notifications area -->
-            <div id="notificationsArea"></div>
-        </div>
-    </div>
-
-    <!-- Universal Modal -->
-    <div id="universalModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">Título</h3>
-                <button class="close" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="modalBody">
-                <!-- Content will be loaded here -->
-            </div>
-            <div class="modal-footer" id="modalFooter">
-                <!-- Footer buttons will be loaded here -->
-            </div>
-        </div>
-    </div>
+    <!-- SUPABASE CDN -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
     <script>
-        // ===========================================
-        // CONFIGURACIÓN Y VARIABLES GLOBALES
-        // ===========================================
+        // ============================================
+        // CONFIGURACIÓN GLOBAL
+        // ============================================
         
         // Configuración de Supabase
         const SUPABASE_URL = 'https://nipwdvnhngdydpclvhco.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pcHdkdm5obmdkeWRwY2x2aGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzOTcxNzcsImV4cCI6MjA3MDk3MzE3N30.nMkXseYCsdh_eCfWBXBYsvzObbXjq4Uj3_sBvq2pF0E';
         
-        // Inicializar Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Inicializar Supabase con verificación
+        let supabase = null;
+        
+        // Verificar que Supabase esté disponible
+        function initSupabase() {
+            try {
+                if (typeof window.supabase !== 'undefined') {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log('✅ Supabase inicializado correctamente');
+                    return true;
+                } else {
+                    console.warn('⚠️ Supabase no disponible, modo offline');
+                    return false;
+                }
+            } catch (error) {
+                console.warn('⚠️ Error inicializando Supabase:', error);
+                return false;
+            }
+        }
         
         // Variables globales
         let currentUser = null;
-        let isOnline = navigator.onLine;
-        let offlineData = {
-            clientes: [],
-            productos: [],
-            cotizaciones: [],
-            zonas: [],
-            entradas: [],
-            pendingSync: []
-        };
+        let isOnlineStatus = navigator.onLine;
+        let db = null; // IndexedDB instance
         
-        // Configuración EmailJS (necesitarás configurar tu cuenta)
-        const EMAILJS_SERVICE_ID = 'your_service_id';
-        const EMAILJS_TEMPLATE_ID = 'your_template_id';
-        const EMAILJS_USER_ID = 'your_user_id';
-        
-        // Inicializar EmailJS si está disponible
-        if (typeof emailjs !== 'undefined') {
-            emailjs.init(EMAILJS_USER_ID);
-        }
-        
-        // ===========================================
+        // ============================================
         // INICIALIZACIÓN
-        // ===========================================
+        // ============================================
         
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
-            setupEventListeners();
-            checkConnectionStatus();
-        });
-        
-        function initializeApp() {
-            // Verificar si hay sesión guardada
-            const savedSession = localStorage.getItem('userSession');
-            if (savedSession) {
-                currentUser = JSON.parse(savedSession);
-                showApp();
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Iniciando Sistema de Cotizaciones v1.0');
+            
+            // Inicializar Supabase
+            const supabaseReady = initSupabase();
+            
+            // Inicializar base de datos local
+            await initIndexedDB();
+            
+            // Configurar eventos de conectividad
+            setupConnectivityEvents();
+            
+            // Configurar formulario de login
+            setupLoginForm();
+            
+            // Verificar sesión existente
+            checkExistingSession();
+            
+            updateConnectionStatus();
+            
+            if (supabaseReady) {
+                showNotification('Sistema listo - Conectado a Supabase', 'success');
             } else {
-                showLogin();
+                showNotification('Sistema listo - Solo modo offline', 'warning');
             }
-            
-            // Inicializar IndexedDB para almacenamiento offline
-            initializeOfflineStorage();
-        }
+        });
+
+        // ============================================
+        // FUNCIONES DE AUTENTICACIÓN
+        // ============================================
         
-        function setupEventListeners() {
-            // Login form
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            
-            // Connection status
-            window.addEventListener('online', () => {
-                isOnline = true;
-                updateConnectionStatus();
-                syncOfflineData();
-            });
-            
-            window.addEventListener('offline', () => {
-                isOnline = false;
-                updateConnectionStatus();
-            });
-            
-            // Modal click outside to close
-            document.getElementById('universalModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModal();
-                }
-            });
-        }
-        
-        // ===========================================
-        // AUTENTICACIÓN
-        // ===========================================
-        
-        async function handleLogin(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
+        async function validateLogin() {
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             
-            showNotification('Iniciando sesión...', 'info');
+            if (!username || !password) {
+                showNotification('Por favor complete todos los campos', 'warning');
+                return false;
+            }
+            
+            showLoading(true);
             
             try {
-                if (isOnline) {
-                    // Verificar credenciales en la base de datos
+                if (isOnlineStatus && supabase) {
+                    // Validar contra Supabase
                     const { data, error } = await supabase
                         .from('usuarios')
                         .select('*')
@@ -784,15 +577,12 @@
                         .single();
                     
                     if (error || !data) {
-                        showNotification('Usuario o contraseña incorrectos', 'error');
-                        return;
+                        throw new Error('Usuario no encontrado o inactivo');
                     }
                     
-                    // En un entorno real, aquí verificarías el hash de la contraseña
-                    // Por ahora, usamos comparación simple para pruebas
-                    if (password !== 'temporal123' && password !== 'Admin2025*') {
-                        showNotification('Usuario o contraseña incorrectos', 'error');
-                        return;
+                    // Validar contraseña (en producción debería usar hash)
+                    if (password !== 'Admin2025*') {
+                        throw new Error('Contraseña incorrecta');
                     }
                     
                     // Actualizar último acceso
@@ -801,623 +591,505 @@
                         .update({ ultimo_acceso: new Date().toISOString() })
                         .eq('id', data.id);
                     
-                    currentUser = data;
-                    localStorage.setItem('userSession', JSON.stringify(data));
+                    // Registrar en historial
+                    await registerAction('Login exitoso', 'usuarios', data.id, `Usuario: ${username}`);
                     
+                    currentUser = data;
                 } else {
-                    // Modo offline - verificar credenciales básicas
-                    if (username === 'jhernandez' && (password === 'temporal123' || password === 'Admin2025*')) {
-                        currentUser = { 
-                            username: 'jhernandez', 
+                    // Validación offline con credenciales hardcodeadas
+                    if (username === 'jhernandez' && password === 'Admin2025*') {
+                        currentUser = {
+                            id: 1,
+                            username: 'jhernandez',
                             nombre: 'Jorge Luis Hernández',
                             perfil: 'admin'
                         };
-                        localStorage.setItem('userSession', JSON.stringify(currentUser));
                     } else {
-                        showNotification('Credenciales incorrectas (modo offline)', 'error');
-                        return;
+                        throw new Error('Credenciales incorrectas (modo offline)');
                     }
                 }
                 
-                showNotification('¡Bienvenido!', 'success');
-                showApp();
+                // Guardar sesión
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                localStorage.setItem('loginTime', new Date().toISOString());
+                
+                showNotification('Login exitoso', 'success');
+                showMenu();
+                
+                return true;
                 
             } catch (error) {
                 console.error('Error en login:', error);
-                showNotification('Error al iniciar sesión', 'error');
+                showNotification(error.message || 'Error al iniciar sesión', 'error');
+                return false;
+            } finally {
+                showLoading(false);
             }
+        }
+        
+        function showMenu() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('menuScreen').style.display = 'block';
+            document.getElementById('contentArea').style.display = 'none';
+            
+            if (currentUser) {
+                document.getElementById('currentUser').textContent = currentUser.nombre;
+            }
+            
+            updateConnectionStatus();
         }
         
         function logout() {
+            // Registrar logout antes de limpiar sesión
+            if (isOnlineStatus && currentUser) {
+                registerAction('Logout', 'usuarios', currentUser.id, 'Sesión cerrada');
+            }
+            
+            // Limpiar sesión
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('loginTime');
             currentUser = null;
-            localStorage.removeItem('userSession');
-            showLogin();
-            showNotification('Sesión cerrada', 'info');
-        }
-        
-        function showLogin() {
+            
+            // Mostrar pantalla de login
+            document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('appContainer').style.display = 'none';
+            
+            // Limpiar formulario
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            
+            showNotification('Sesión cerrada correctamente', 'info');
+        }
+
+        // ============================================
+        // FUNCIONES DE NAVEGACIÓN (MÓDULOS)
+        // ============================================
+        
+        async function showClientes() {
+            showContentArea('Clientes', 'Función en desarrollo - Gestión de clientes y zonas');
         }
         
-        function showApp() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('appContainer').style.display = 'block';
-            document.getElementById('userName').textContent = currentUser.nombre;
-            loadInitialData();
+        async function showProductos() {
+            showContentArea('Productos', 'Función en desarrollo - Catálogo de productos y stock');
         }
         
-        // ===========================================
-        // GESTIÓN DE CONEXIÓN Y SINCRONIZACIÓN
-        // ===========================================
-        
-        function checkConnectionStatus() {
-            updateConnectionStatus();
-            
-            // Verificar conexión cada 30 segundos
-            setInterval(() => {
-                fetch(SUPABASE_URL + '/rest/v1/', { method: 'HEAD' })
-                    .then(() => {
-                        if (!isOnline) {
-                            isOnline = true;
-                            updateConnectionStatus();
-                            syncOfflineData();
-                        }
-                    })
-                    .catch(() => {
-                        if (isOnline) {
-                            isOnline = false;
-                            updateConnectionStatus();
-                        }
-                    });
-            }, 30000);
+        async function showEntradas() {
+            showContentArea('Entradas', 'Función en desarrollo - Registro de entradas y devoluciones');
         }
         
-        function updateConnectionStatus() {
-            const statusElements = [
-                document.getElementById('connectionStatus'),
-                document.getElementById('connectionStatusApp')
-            ];
-            
-            statusElements.forEach(element => {
-                if (element) {
-                    if (isOnline) {
-                        element.textContent = '🟢 En línea';
-                        element.className = 'connection-status online';
-                    } else {
-                        element.textContent = '🔴 Sin conexión';
-                        element.className = 'connection-status offline';
-                    }
-                }
-            });
+        async function showCotizaciones() {
+            showContentArea('Cotizaciones', 'Función en desarrollo - Crear y gestionar cotizaciones');
         }
         
-        async function syncOfflineData() {
-            if (!isOnline) return;
-            
-            const pendingItems = getPendingSyncItems();
-            if (pendingItems.length === 0) return;
-            
-            showNotification('Sincronizando datos...', 'info');
-            
-            let syncSuccessCount = 0;
-            let syncErrorCount = 0;
-            
-            for (const item of pendingItems) {
-                try {
-                    await syncSingleItem(item);
-                    syncSuccessCount++;
-                    removePendingSyncItem(item.id);
-                } catch (error) {
-                    console.error('Error sincronizando item:', error);
-                    syncErrorCount++;
-                }
-            }
-            
-            if (syncSuccessCount > 0) {
-                showNotification(`${syncSuccessCount} registros sincronizados exitosamente`, 'success');
-            }
-            
-            if (syncErrorCount > 0) {
-                showNotification(`Error al sincronizar ${syncErrorCount} registros`, 'error');
-            }
+        async function showParametros() {
+            showContentArea('Parámetros', 'Función en desarrollo - Configuración del sistema');
         }
         
-        // ===========================================
-        // ALMACENAMIENTO OFFLINE (IndexedDB)
-        // ===========================================
-        
-        function initializeOfflineStorage() {
-            // Inicializar IndexedDB para almacenamiento offline
-            const request = indexedDB.open('CotizacionesDB', 1);
-            
-            request.onerror = function(event) {
-                console.error('Error abriendo IndexedDB:', event);
-            };
-            
-            request.onsuccess = function(event) {
-                const db = event.target.result;
-                window.offlineDB = db;
-                loadOfflineData();
-            };
-            
-            request.onupgradeneeded = function(event) {
-                const db = event.target.result;
-                
-                // Crear stores para cada tabla
-                const tables = ['clientes', 'productos', 'cotizaciones', 'entradas', 'zonas', 'sync_queue'];
-                
-                tables.forEach(tableName => {
-                    if (!db.objectStoreNames.contains(tableName)) {
-                        const store = db.createObjectStore(tableName, { keyPath: 'id', autoIncrement: true });
-                        if (tableName === 'clientes') store.createIndex('nit', 'nit', { unique: true });
-                        if (tableName === 'productos') store.createIndex('codigo', 'codigo', { unique: true });
-                    }
-                });
-            };
+        async function showInformes() {
+            showContentArea('Informes', 'Función en desarrollo - Reportes y estadísticas');
         }
+
+        // ============================================
+        // FUNCIONES DE UTILIDAD SUPABASE
+        // ============================================
         
-        function saveToOfflineDB(tableName, data) {
-            if (!window.offlineDB) return;
-            
-            const transaction = window.offlineDB.transaction([tableName], 'readwrite');
-            const store = transaction.objectStore(tableName);
-            
-            if (Array.isArray(data)) {
-                data.forEach(item => store.put(item));
-            } else {
-                store.put(data);
-            }
-        }
-        
-        function getFromOfflineDB(tableName) {
-            return new Promise((resolve, reject) => {
-                if (!window.offlineDB) {
-                    resolve([]);
-                    return;
-                }
-                
-                const transaction = window.offlineDB.transaction([tableName], 'readonly');
-                const store = transaction.objectStore(tableName);
-                const request = store.getAll();
-                
-                request.onsuccess = function() {
-                    resolve(request.result || []);
-                };
-                
-                request.onerror = function() {
-                    reject(request.error);
-                };
-            });
-        }
-        
-        function addToSyncQueue(action, table, data) {
-            const syncItem = {
-                id: Date.now() + Math.random(),
-                action: action, // 'create', 'update', 'delete'
-                table: table,
-                data: data,
-                timestamp: new Date().toISOString()
-            };
-            
-            saveToOfflineDB('sync_queue', syncItem);
-        }
-        
-        function getPendingSyncItems() {
-            return getFromOfflineDB('sync_queue');
-        }
-        
-        function removePendingSyncItem(itemId) {
-            if (!window.offlineDB) return;
-            
-            const transaction = window.offlineDB.transaction(['sync_queue'], 'readwrite');
-            const store = transaction.objectStore('sync_queue');
-            store.delete(itemId);
-        }
-        
-        async function syncSingleItem(item) {
-            const { action, table, data } = item;
-            
-            switch (action) {
-                case 'create':
-                    await supabase.from(table).insert(data);
-                    break;
-                case 'update':
-                    await supabase.from(table).update(data).eq('id', data.id);
-                    break;
-                case 'delete':
-                    await supabase.from(table).delete().eq('id', data.id);
-                    break;
-            }
-        }
-        
-        // ===========================================
-        // CARGA DE DATOS INICIALES
-        // ===========================================
-        
-        async function loadInitialData() {
+        async function executeQuery(table, action, data) {
             try {
-                if (isOnline) {
-                    // Cargar datos desde Supabase
-                    await loadOnlineData();
-                } else {
-                    // Cargar datos desde IndexedDB
-                    await loadOfflineData();
-                }
-            } catch (error) {
-                console.error('Error cargando datos iniciales:', error);
-                showNotification('Error cargando datos', 'error');
-            }
-        }
-        
-        async function loadOnlineData() {
-            try {
-                // Cargar datos básicos
-                const [clientesData, productosData, zonasData] = await Promise.all([
-                    supabase.from('clientes').select('*').eq('activo', true),
-                    supabase.from('productos').select('*').eq('activo', true),
-                    supabase.from('zonas').select('*').eq('activa', true)
-                ]);
-                
-                offlineData.clientes = clientesData.data || [];
-                offlineData.productos = productosData.data || [];
-                offlineData.zonas = zonasData.data || [];
-                
-                // Guardar en IndexedDB para uso offline
-                saveToOfflineDB('clientes', offlineData.clientes);
-                saveToOfflineDB('productos', offlineData.productos);
-                saveToOfflineDB('zonas', offlineData.zonas);
-                
-            } catch (error) {
-                console.error('Error cargando datos online:', error);
-                // Fallback a datos offline
-                await loadOfflineData();
-            }
-        }
-        
-        async function loadOfflineData() {
-            try {
-                offlineData.clientes = await getFromOfflineDB('clientes');
-                offlineData.productos = await getFromOfflineDB('productos');
-                offlineData.zonas = await getFromOfflineDB('zonas');
-                offlineData.cotizaciones = await getFromOfflineDB('cotizaciones');
-            } catch (error) {
-                console.error('Error cargando datos offline:', error);
-            }
-        }
-        
-        // ===========================================
-        // GESTIÓN DE MÓDULOS
-        // ===========================================
-        
-        function openModule(moduleName) {
-            switch (moduleName) {
-                case 'clientes':
-                    openClientesModule();
-                    break;
-                case 'productos':
-                    openProductosModule();
-                    break;
-                case 'entradas':
-                    openEntradasModule();
-                    break;
-                case 'cotizaciones':
-                    openCotizacionesModule();
-                    break;
-                case 'parametros':
-                    openParametrosModule();
-                    break;
-                case 'informes':
-                    openInformesModule();
-                    break;
-                default:
-                    showNotification('Módulo no implementado', 'warning');
-            }
-        }
-        
-        // ===========================================
-        // MÓDULO DE CLIENTES
-        // ===========================================
-        
-        function openClientesModule() {
-            const modalContent = `
-                <div class="search-bar">
-                    <input type="text" class="search-input" placeholder="Buscar por nombre o NIT..." onkeyup="filterClientes(this.value)">
-                    <button class="btn" onclick="showClienteForm()">+ Nuevo Cliente</button>
-                </div>
-                
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>NIT</th>
-                                <th>Nombre</th>
-                                <th>Correo</th>
-                                <th>Teléfono</th>
-                                <th>Zona</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="clientesTableBody">
-                            ${renderClientesTable()}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            
-            showModal('Gestión de Clientes', modalContent, [
-                '<button class="btn btn-secondary" onclick="closeModal()">Cerrar</button>'
-            ]);
-        }
-        
-        function renderClientesTable() {
-            return offlineData.clientes.map(cliente => `
-                <tr>
-                    <td>${cliente.nit}</td>
-                    <td>${cliente.nombre}</td>
-                    <td>${cliente.correo || '-'}</td>
-                    <td>${cliente.tel_celular || '-'}</td>
-                    <td>${cliente.zona || '-'}</td>
-                    <td>
-                        <button class="btn btn-secondary" style="margin-right: 5px; padding: 5px 10px;" onclick="editCliente('${cliente.nit}')">✏️</button>
-                        <button class="btn btn-danger" style="padding: 5px 10px;" onclick="deleteCliente('${cliente.nit}')">🗑️</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-        
-        function filterClientes(searchTerm) {
-            const filteredClientes = offlineData.clientes.filter(cliente => 
-                cliente.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                cliente.nit.includes(searchTerm)
-            );
-            
-            document.getElementById('clientesTableBody').innerHTML = 
-                filteredClientes.map(cliente => `
-                    <tr>
-                        <td>${cliente.nit}</td>
-                        <td>${cliente.nombre}</td>
-                        <td>${cliente.correo || '-'}</td>
-                        <td>${cliente.tel_celular || '-'}</td>
-                        <td>${cliente.zona || '-'}</td>
-                        <td>
-                            <button class="btn btn-secondary" style="margin-right: 5px; padding: 5px 10px;" onclick="editCliente('${cliente.nit}')">✏️</button>
-                            <button class="btn btn-danger" style="padding: 5px 10px;" onclick="deleteCliente('${cliente.nit}')">🗑️</button>
-                        </td>
-                    </tr>
-                `).join('');
-        }
-        
-        function showClienteForm(nit = null) {
-            const isEdit = nit !== null;
-            const cliente = isEdit ? offlineData.clientes.find(c => c.nit === nit) : {};
-            
-            const zonasOptions = offlineData.zonas.map(zona => 
-                `<option value="${zona.id}" ${cliente.zona === zona.id ? 'selected' : ''}>${zona.nombre}</option>`
-            ).join('');
-            
-            const formContent = `
-                <form id="clienteForm">
-                    <div class="grid-2">
-                        <div class="form-group">
-                            <label for="clienteNit">NIT</label>
-                            <input type="text" id="clienteNit" value="${cliente.nit || ''}" ${isEdit ? 'readonly' : ''} required>
-                        </div>
-                        <div class="form-group">
-                            <label for="clienteNombre">Nombre</label>
-                            <input type="text" id="clienteNombre" value="${cliente.nombre || ''}" required>
-                        </div>
-                    </div>
-                    
-                    <div class="grid-2">
-                        <div class="form-group">
-                            <label for="clienteCorreo">Correo</label>
-                            <input type="email" id="clienteCorreo" value="${cliente.correo || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label for="clienteZona">Zona</label>
-                            <select id="clienteZona">
-                                <option value="">Seleccionar zona</option>
-                                ${zonasOptions}
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="grid-2">
-                        <div class="form-group">
-                            <label for="clienteCelular">Teléfono Celular</label>
-                            <input type="text" id="clienteCelular" value="${cliente.tel_celular || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label for="clienteFijo">Teléfono Fijo</label>
-                            <input type="text" id="clienteFijo" value="${cliente.tel_fijo || ''}">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="clienteDireccion">Dirección</label>
-                        <textarea id="clienteDireccion" rows="3">${cliente.direccion || ''}</textarea>
-                    </div>
-                </form>
-            `;
-            
-            showModal(
-                isEdit ? 'Editar Cliente' : 'Nuevo Cliente', 
-                formContent,
-                [
-                    `<button class="btn" onclick="saveCliente(${isEdit})">${isEdit ? 'Actualizar' : 'Guardar'}</button>`,
-                    '<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>'
-                ]
-            );
-        }
-        
-        async function saveCliente(isEdit) {
-            const clienteData = {
-                nit: document.getElementById('clienteNit').value,
-                nombre: document.getElementById('clienteNombre').value,
-                correo: document.getElementById('clienteCorreo').value,
-                zona: document.getElementById('clienteZona').value,
-                tel_celular: document.getElementById('clienteCelular').value,
-                tel_fijo: document.getElementById('clienteFijo').value,
-                direccion: document.getElementById('clienteDireccion').value,
-                activo: true
-            };
-            
-            // Validar datos
-            if (!clienteData.nit || !clienteData.nombre) {
-                showNotification('NIT y nombre son obligatorios', 'error');
-                return;
-            }
-            
-            // Verificar duplicados
-            if (!isEdit && offlineData.clientes.find(c => c.nit === clienteData.nit)) {
-                showNotification('Ya existe un cliente con ese NIT', 'error');
-                return;
-            }
-            
-            try {
-                if (isOnline) {
-                    if (isEdit) {
-                        await supabase.from('clientes').update(clienteData).eq('nit', clienteData.nit);
-                    } else {
-                        await supabase.from('clientes').insert(clienteData);
-                    }
-                } else {
+                if (!isOnlineStatus || !supabase) {
                     // Guardar para sincronización posterior
-                    addToSyncQueue(isEdit ? 'update' : 'create', 'clientes', clienteData);
+                    await saveOffline(table, { action, data, timestamp: new Date().toISOString() });
+                    return { success: true, offline: true };
                 }
                 
-                // Actualizar datos locales
-                if (isEdit) {
-                    const index = offlineData.clientes.findIndex(c => c.nit === clienteData.nit);
-                    offlineData.clientes[index] = clienteData;
-                } else {
-                    offlineData.clientes.push(clienteData);
+                let result;
+                
+                switch (action) {
+                    case 'select':
+                        result = await supabase.from(table).select(data.select || '*');
+                        break;
+                    case 'insert':
+                        result = await supabase.from(table).insert(data);
+                        break;
+                    case 'update':
+                        result = await supabase.from(table).update(data.updates).eq(data.where.column, data.where.value);
+                        break;
+                    case 'delete':
+                        result = await supabase.from(table).delete().eq(data.column, data.value);
+                        break;
+                    default:
+                        throw new Error('Acción no válida');
                 }
                 
-                saveToOfflineDB('clientes', offlineData.clientes);
+                if (result.error) throw result.error;
                 
-                showNotification(`Cliente ${isEdit ? 'actualizado' : 'creado'} exitosamente`, 'success');
-                closeModal();
-                openClientesModule(); // Refrescar la vista
+                return { success: true, data: result.data };
                 
             } catch (error) {
-                console.error('Error guardando cliente:', error);
-                showNotification('Error al guardar cliente', 'error');
+                console.error('Error en executeQuery:', error);
+                throw error;
             }
         }
         
-        async function deleteCliente(nit) {
-            if (!confirm('¿Está seguro de eliminar este cliente?')) return;
+        async function syncToCloud() {
+            if (!isOnlineStatus || !supabase) return false;
             
             try {
-                if (isOnline) {
-                    await supabase.from('clientes').update({ activo: false }).eq('nit', nit);
-                } else {
-                    addToSyncQueue('update', 'clientes', { nit: nit, activo: false });
+                const pendingSync = await getOffline('sync_pending');
+                let syncCount = 0;
+                
+                for (const item of pendingSync) {
+                    try {
+                        await executeQuery(item.table, item.action, item.data);
+                        await removeFromOfflineSync(item.id);
+                        syncCount++;
+                    } catch (error) {
+                        console.error('Error sincronizando item:', error);
+                    }
                 }
                 
-                // Remover de datos locales
-                offlineData.clientes = offlineData.clientes.filter(c => c.nit !== nit);
-                saveToOfflineDB('clientes', offlineData.clientes);
+                if (syncCount > 0) {
+                    showNotification(`${syncCount} registros sincronizados exitosamente`, 'success');
+                    updateLastSync();
+                }
                 
-                showNotification('Cliente eliminado exitosamente', 'success');
-                openClientesModule(); // Refrescar la vista
+                return true;
                 
             } catch (error) {
-                console.error('Error eliminando cliente:', error);
-                showNotification('Error al eliminar cliente', 'error');
+                console.error('Error en sincronización:', error);
+                showNotification('Error al sincronizar datos', 'error');
+                return false;
             }
         }
         
-        function editCliente(nit) {
-            showClienteForm(nit);
+        async function syncFromCloud() {
+            if (!isOnlineStatus || !supabase) return false;
+            
+            try {
+                // Sincronizar tablas principales
+                const tables = ['parametros', 'zonas', 'clientes', 'productos'];
+                
+                for (const table of tables) {
+                    const { data } = await supabase.from(table).select('*');
+                    if (data) {
+                        await saveOffline(table, data);
+                    }
+                }
+                
+                updateLastSync();
+                return true;
+                
+            } catch (error) {
+                console.error('Error descargando datos:', error);
+                return false;
+            }
         }
-        
-        // ===========================================
-        // FUNCIONES AUXILIARES
-        // ===========================================
-        
-        function formatNumber(number) {
-            return new Intl.NumberFormat('es-CO').format(number);
-        }
+
+        // ============================================
+        // FUNCIONES DE UTILIDAD GENERALES
+        // ============================================
         
         function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
+            const notification = document.getElementById('notification');
             notification.textContent = message;
-            
-            document.body.appendChild(notification);
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
             
             setTimeout(() => {
-                notification.remove();
+                notification.classList.remove('show');
             }, 4000);
         }
         
-        function showModal(title, content, buttons = []) {
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalBody').innerHTML = content;
-            document.getElementById('modalFooter').innerHTML = buttons.join('');
-            document.getElementById('universalModal').style.display = 'flex';
+        function formatCurrency(amount) {
+            if (typeof amount !== 'number') amount = parseFloat(amount) || 0;
+            return new Intl.NumberFormat('es-CO', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
         }
         
-        function closeModal() {
-            document.getElementById('universalModal').style.display = 'none';
+        function formatDate(date) {
+            if (!date) return '--/--/----';
+            const d = new Date(date);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`;
         }
         
-        // Placeholder functions for modules not fully implemented
-        function openProductosModule() {
-            showNotification('Módulo de productos en desarrollo', 'info');
-        }
-        
-        function openEntradasModule() {
-            showNotification('Módulo de entradas en desarrollo', 'info');
-        }
-        
-        function openCotizacionesModule() {
-            showNotification('Módulo de cotizaciones en desarrollo', 'info');
-        }
-        
-        function openParametrosModule() {
-            showNotification('Módulo de parámetros en desarrollo', 'info');
-        }
-        
-        function openInformesModule() {
-            showNotification('Módulo de informes en desarrollo', 'info');
-        }
-        
-        // Service Worker para PWA (básico)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                // Crear service worker inline para evitar problemas de archivos
-                const swCode = `
-                    self.addEventListener('install', function(event) {
-                        console.log('Service Worker instalado');
-                        self.skipWaiting();
-                    });
+        async function generateConsecutivo() {
+            const year = new Date().getFullYear();
+            
+            try {
+                if (isOnlineStatus && supabase) {
+                    // Usar función PostgreSQL
+                    const { data, error } = await supabase
+                        .rpc('generar_consecutivo_cotizacion', { año_param: year });
                     
-                    self.addEventListener('activate', function(event) {
-                        console.log('Service Worker activado');
-                        event.waitUntil(self.clients.claim());
-                    });
+                    if (error) throw error;
+                    return data;
+                } else {
+                    // Generar consecutivo offline
+                    const lastConsec = localStorage.getItem(`consecutivo_${year}`) || '0';
+                    const newConsec = parseInt(lastConsec) + 1;
+                    localStorage.setItem(`consecutivo_${year}`, newConsec.toString());
+                    return `COT-${year}-${String(newConsec).padStart(3, '0')}`;
+                }
+                
+            } catch (error) {
+                console.error('Error generando consecutivo:', error);
+                return `COT-${year}-ERR`;
+            }
+        }
+        
+        function isOnline() {
+            return isOnlineStatus;
+        }
+
+        // ============================================
+        // FUNCIONES INDEXEDDB (OFFLINE)
+        // ============================================
+        
+        async function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('CotizacionesDB', 1);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
                     
-                    self.addEventListener('fetch', function(event) {
-                        // Aquí puedes agregar lógica de cache si es necesario
+                    // Crear stores para cada tabla
+                    const stores = ['clientes', 'productos', 'entradas', 'cotizaciones', 'parametros', 'zonas', 'sync_pending'];
+                    
+                    stores.forEach(storeName => {
+                        if (!db.objectStoreNames.contains(storeName)) {
+                            const store = db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
+                            store.createIndex('timestamp', 'timestamp', { unique: false });
+                        }
                     });
-                `;
-                
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                
-                navigator.serviceWorker.register(swUrl)
-                    .then(function(registration) {
-                        console.log('ServiceWorker registrado exitosamente');
-                    })
-                    .catch(function(error) {
-                        console.log('Error registrando ServiceWorker:', error);
-                    });
+                };
             });
         }
+        
+        async function saveOffline(table, data) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([table], 'readwrite');
+                const store = transaction.objectStore(table);
+                
+                const dataWithTimestamp = {
+                    ...data,
+                    timestamp: new Date().toISOString(),
+                    synced: false
+                };
+                
+                const request = store.add(dataWithTimestamp);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+        
+        async function getOffline(table) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([table], 'readonly');
+                const store = transaction.objectStore(table);
+                const request = store.getAll();
+                
+                request.onsuccess = () => resolve(request.result || []);
+                request.onerror = () => reject(request.error);
+            });
+        }
+        
+        async function removeFromOfflineSync(id) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['sync_pending'], 'readwrite');
+                const store = transaction.objectStore('sync_pending');
+                const request = store.delete(id);
+                
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // ============================================
+        // FUNCIONES DE CONECTIVIDAD
+        // ============================================
+        
+        function setupConnectivityEvents() {
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+        }
+        
+        async function handleOnline() {
+            isOnlineStatus = true;
+            updateConnectionStatus();
+            showNotification('Conexión restablecida', 'success');
+            
+            // Intentar sincronización automática
+            await syncToCloud();
+            await syncFromCloud();
+        }
+        
+        function handleOffline() {
+            isOnlineStatus = false;
+            updateConnectionStatus();
+            showNotification('Modo offline activado', 'warning');
+        }
+        
+        function updateConnectionStatus() {
+            const dot = document.getElementById('connectionDot');
+            const status = document.getElementById('connectionStatus');
+            
+            if (isOnlineStatus) {
+                dot.classList.remove('offline');
+                status.textContent = 'En línea';
+            } else {
+                dot.classList.add('offline');
+                status.textContent = 'Sin conexión';
+            }
+        }
+        
+        function updateLastSync() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-CO', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            document.getElementById('lastSync').textContent = `Última sincronización: ${timeString}`;
+            localStorage.setItem('lastSync', now.toISOString());
+        }
+
+        // ============================================
+        // FUNCIONES DE SOPORTE
+        // ============================================
+        
+        async function registerAction(action, table, id, detail) {
+            try {
+                const logEntry = {
+                    usuario: currentUser?.username || 'system',
+                    accion: action,
+                    tabla: table,
+                    registro_id: id?.toString() || '',
+                    detalle: detail || '',
+                    fecha_hora: new Date().toISOString()
+                };
+                
+                if (isOnlineStatus && supabase) {
+                    await supabase.from('historial').insert([logEntry]);
+                } else {
+                    await saveOffline('historial', logEntry);
+                }
+                
+            } catch (error) {
+                console.error('Error registrando acción:', error);
+            }
+        }
+        
+        function showContentArea(title, content) {
+            document.getElementById('menuScreen').style.display = 'none';
+            document.getElementById('contentArea').style.display = 'block';
+            document.getElementById('contentTitle').textContent = title;
+            document.getElementById('contentBody').innerHTML = `
+                <div style="text-align: center; padding: 50px; color: #6b7280;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🚧</div>
+                    <h3 style="margin-bottom: 10px; color: #374151;">Módulo en Desarrollo</h3>
+                    <p>${content}</p>
+                    <p style="margin-top: 20px; font-size: 14px;">
+                        Para continuar el desarrollo, use el comando:<br>
+                        <code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; color: #2563eb;">
+                            "Desarrollar función show${title}()"
+                        </code>
+                    </p>
+                </div>
+            `;
+        }
+        
+        function setupLoginForm() {
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await validateLogin();
+            });
+        }
+        
+        function showLoading(show) {
+            const btn = document.getElementById('loginBtn');
+            const text = btn.querySelector('.btn-text');
+            const loading = btn.querySelector('.loading');
+            
+            if (show) {
+                text.style.display = 'none';
+                loading.style.display = 'inline-block';
+                btn.disabled = true;
+            } else {
+                text.style.display = 'inline';
+                loading.style.display = 'none';
+                btn.disabled = false;
+            }
+        }
+        
+        function checkExistingSession() {
+            const savedUser = localStorage.getItem('currentUser');
+            const loginTime = localStorage.getItem('loginTime');
+            
+            if (savedUser && loginTime) {
+                const sessionAge = Date.now() - new Date(loginTime).getTime();
+                const maxAge = 60 * 60 * 1000; // 60 minutos
+                
+                if (sessionAge < maxAge) {
+                    currentUser = JSON.parse(savedUser);
+                    showMenu();
+                } else {
+                    logout();
+                }
+            }
+        }
+        
+        // ============================================
+        // FUNCIONES EXPORTADAS PARA PRÓXIMOS CHATS
+        // ============================================
+        
+        /*
+        LISTA DE FUNCIONES CREADAS PARA CONTINUAR EN PRÓXIMOS CHATS:
+
+        AUTENTICACIÓN:
+        - validateLogin()
+        - showMenu()
+        - logout()
+        - registerAction()
+
+        NAVEGACIÓN (MÓDULOS A DESARROLLAR):
+        - showClientes()      ← Desarrollar primero
+        - showProductos()     ← Segundo
+        - showEntradas()      ← Tercero
+        - showCotizaciones()  ← Cuarto
+        - showParametros()    ← Quinto
+        - showInformes()      ← Sexto
+
+        UTILIDADES SUPABASE:
+        - executeQuery()
+        - syncToCloud()
+        - syncFromCloud()
+
+        UTILIDADES GENERALES:
+        - showNotification()
+        - formatCurrency()
+        - formatDate()
+        - generateConsecutivo()
+        - isOnline()
+
+        INDEXEDDB OFFLINE:
+        - initIndexedDB()
+        - saveOffline()
+        - getOffline()
+
+        Para continuar en próximos chats, usar:
+        "Desarrollar función showClientes()" (o cualquier función de la lista)
+        */
+        
     </script>
 </body>
 </html>
