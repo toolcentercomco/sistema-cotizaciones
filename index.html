@@ -4566,10 +4566,17 @@
             
             // Cargar jsPDF din谩micamente
             // Cargar jsPDF dinámicamente
+// Cargar jsPDF dinámicamente
 if (!window.jsPDF) {
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-    script.onerror = () => console.error('Error cargando jsPDF');
+    script.onload = () => {
+        console.log('jsPDF cargado correctamente');
+    };
+    script.onerror = () => {
+        console.error('Error cargando jsPDF');
+        showNotification('Error al cargar generador de PDF', 'error');
+    };
     document.head.appendChild(script);
 }
             function loadBase64Image(base64) {
@@ -4886,27 +4893,34 @@ if (!window.jsPDF) {
                 }
             };
             
-            window.editCotizacion = function(consecutivo) {
-                showNotification('Funci贸n de edici贸n en desarrollo', 'info');
-            };
-            
             window.generatePDF = async function(consecutivo) {
     try {
-        // Verificar jsPDF
-        if (!window.jsPDF) {
-            showNotification('Cargando generador de PDF...', 'info');
+        // Verificación más robusta de jsPDF
+        if (typeof jspdf === 'undefined') {
+            console.error('jsPDF no está definido');
+            showNotification('Error: Generador de PDF no cargado', 'error');
             return;
         }
 
-        const { jsPDF } = window.jspdf;
+        const { jsPDF } = jspdf;
         
         const cotizacion = cotizacionesList.find(c => c.consecutivo === consecutivo);
-        if (!cotizacion) return;
+        if (!cotizacion) {
+            console.error('Cotización no encontrada');
+            showNotification('Error: Cotización no encontrada', 'error');
+            return;
+        }
         
-        // Cargar detalles de la cotizaciÃ³n
+        // Cargar detalles de la cotización
         const detalles = await loadCotizacionDetalles(cotizacion.id_cotizacion);
         
-        // Generar PDF
+        if (!detalles || detalles.length === 0) {
+            console.error('No hay detalles para la cotización');
+            showNotification('Error: No hay detalles para la cotización', 'error');
+            return;
+        }
+
+        // Crear documento PDF
         const doc = new jsPDF();
         
         // Agregar logo si existe
@@ -4929,27 +4943,27 @@ if (!window.jsPDF) {
         // Configurar fuente
         doc.setFont('helvetica');
         
-        // TÃ­tulo
+        // Título
         doc.setFontSize(20);
         doc.setTextColor(40, 40, 40);
-        doc.text('COTIZACIÃ"N', 105, 60, { align: 'center' });
+        doc.text('COTIZACIÓN', 105, 60, { align: 'center' });
         
-        // InformaciÃ³n de empresa
+        // Información de empresa
         doc.setFontSize(12);
         doc.text(parametrosEmpresa?.nombre_empresa || 'Tool Center', 20, 80);
-        doc.text(`IbaguÃ©, ${formatDate(cotizacion.fecha_hora)}`, 20, 90);
+        doc.text(`Ibagué, ${formatDate(cotizacion.fecha_hora)}`, 20, 90);
         
-        // NÃºmero de cotizaciÃ³n
+        // Número de cotización
         doc.setFontSize(14);
         doc.setTextColor(0, 100, 200);
         doc.text(`${consecutivo}`, 150, 80);
         
-        // InformaciÃ³n del cliente
+        // Información del cliente
         doc.setFontSize(12);
         doc.setTextColor(40, 40, 40);
-        doc.text(`SeÃ±or(a): ${cotizacion.nombre_cliente}`, 20, 110);
+        doc.text(`Señor(a): ${cotizacion.nombre_cliente}`, 20, 110);
         doc.text('Cordial saludo', 20, 125);
-        doc.text('Anexo cotizaciÃ³n segÃºn lista:', 20, 140);
+        doc.text('Anexo cotización según lista:', 20, 140);
         
         // Tabla de productos
         let yPosition = 160;
@@ -4992,7 +5006,7 @@ if (!window.jsPDF) {
         yPosition += 30;
         doc.setFontSize(10);
         doc.text('Cordialmente,', 20, yPosition);
-        doc.text('Jorge Luis HernÃ¡ndez', 20, yPosition + 15);
+        doc.text('Jorge Luis Hernández', 20, yPosition + 15);
         doc.text('Celular: 314 345 2032', 20, yPosition + 25);
         
         // Descargar PDF
