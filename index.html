@@ -2278,7 +2278,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Contrase帽a</label>
+                    <label for="password">Contraseña</label>
                     <input type="password" id="password" class="form-control" required autocomplete="current-password">
                 </div>
                 
@@ -3506,13 +3506,13 @@
                     return;
                 }
                 
-                container.innerHTML = filteredProductos.map(producto => {
-                    const stockStatus = getStockStatus(producto);
-                    const stockIcon = {
-                        normal: '鉁?,
-                        bajo: '鈿狅笍',
-                        agotado: '鉂?
-                    }[stockStatus];
+               container.innerHTML = filteredProductos.map(producto => {
+    const stockStatus = getStockStatus(producto);
+    const stockIcon = {
+        normal: '✅',
+        bajo: '⚠️',
+        agotado: '❌'
+    }[stockStatus];
                     
                     return `
                         <div class="producto-card">
