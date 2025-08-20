@@ -4,7 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Cotizaciones - Tool Center</title>
-    
+    <!-- PWA Manifest -->
+<link rel="manifest" href="./manifest.json">
+
+<!-- Meta tags para PWA -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Tool Center">
+<meta name="msapplication-TileColor" content="#2563eb">
+<meta name="theme-color" content="#2563eb">
+
+<!-- Preload cr®™tico para PWA -->
+<link rel="preload" href="./manifest.json" as="fetch" crossorigin>
     <style>
         * {
             margin: 0;
@@ -2387,7 +2399,7 @@
             try {
                 if (typeof window.supabase !== 'undefined') {
                     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                  console.log('‚úÖ Supabase inicializado correctamente');
+                  console.log('‚ú?Supabase inicializado correctamente');
                     return true;
                 } else {
                     console.warn('‚ö†Ô∏è Supabase no disponible, modo offline');
@@ -2409,6 +2421,207 @@
         // ============================================
         
         document.addEventListener('DOMContentLoaded', async function() {
+		// ============================================
+// PWA SERVICE WORKER Y FUNCIONALIDAD
+// ============================================
+
+// Registrar Service Worker para PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+        try {
+            const registration = await navigator.serviceWorker.register('./sw.js');
+            console.log('? Service Worker registrado:', registration.scope);
+            
+            // Detectar actualizaciones
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showUpdateAvailable(registration);
+                        }
+                    });
+                }
+            });
+            
+        } catch (error) {
+            console.error('? Error registrando Service Worker:', error);
+        }
+    });
+}
+
+// Variable global para el prompt de instalaci®Æn
+let deferredPrompt = null;
+
+// Detectar evento de instalaci®Æn
+window.addEventListener('beforeinstallprompt', (event) => {
+    console.log('?? PWA: Evento de instalaci®Æn detectado');
+    
+    // Prevenir que el navegador muestre el prompt autom®¢ticamente
+    event.preventDefault();
+    
+    // Guardar el evento para usarlo despu®¶s
+    deferredPrompt = event;
+    
+    // Mostrar bot®Æn de instalaci®Æn personalizado
+    showInstallButton();
+});
+
+// Detectar cuando la app es instalada
+window.addEventListener('appinstalled', (event) => {
+    console.log('?? PWA: App instalada correctamente');
+    showNotification('?Aplicaci®Æn instalada correctamente!', 'success');
+    
+    // Ocultar bot®Æn de instalaci®Æn
+    hideInstallButton();
+    deferredPrompt = null;
+});
+
+// Funci®Æn para mostrar bot®Æn de instalaci®Æn
+function showInstallButton() {
+    // Verificar si ya existe el bot®Æn
+    if (document.getElementById('installBtn')) return;
+    
+    // Crear bot®Æn de instalaci®Æn
+    const installBtn = document.createElement('button');
+    installBtn.id = 'installBtn';
+    installBtn.innerHTML = '?? Instalar App';
+    installBtn.title = 'Instalar Tool Center como aplicaci®Æn';
+    installBtn.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        transition: all 0.3s ease;
+        animation: pulse 2s infinite;
+    `;
+    
+    // Agregar animaci®Æn CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0% { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+            50% { box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); }
+            100% { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        }
+        #installBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    installBtn.onclick = installApp;
+    document.body.appendChild(installBtn);
+    
+    console.log('?? PWA: Bot®Æn de instalaci®Æn mostrado');
+}
+
+// Funci®Æn para ocultar bot®Æn de instalaci®Æn
+function hideInstallButton() {
+    const installBtn = document.getElementById('installBtn');
+    if (installBtn) {
+        installBtn.remove();
+        console.log('?? PWA: Bot®Æn de instalaci®Æn ocultado');
+    }
+}
+
+// Funci®Æn para instalar la app
+async function installApp() {
+    if (!deferredPrompt) {
+        showNotification('La instalaci®Æn no est®¢ disponible en este momento', 'warning');
+        return;
+    }
+    
+    try {
+        // Mostrar el prompt de instalaci®Æn
+        const result = await deferredPrompt.prompt();
+        
+        console.log('?? PWA: Resultado de instalaci®Æn:', result.outcome);
+        
+        if (result.outcome === 'accepted') {
+            showNotification('?Instalando aplicaci®Æn...!', 'success');
+        } else {
+            showNotification('Instalaci®Æn cancelada', 'info');
+        }
+        
+    } catch (error) {
+        console.error('? PWA: Error en instalaci®Æn:', error);
+        showNotification('Error durante la instalaci®Æn', 'error');
+    } finally {
+        // Limpiar el prompt
+        deferredPrompt = null;
+        hideInstallButton();
+    }
+}
+
+// Funci®Æn para mostrar actualizaci®Æn disponible
+function showUpdateAvailable(registration) {
+    showNotification('Nueva versi®Æn disponible. Reinicie la app para actualizar.', 'info');
+    
+    // Mostrar opci®Æn para actualizar inmediatamente
+    setTimeout(() => {
+        if (confirm('?Desea actualizar la aplicaci®Æn ahora?\n\nSe recargar®¢ autom®¢ticamente.')) {
+            if (registration.waiting) {
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+            window.location.reload();
+        }
+    }, 3000);
+}
+
+// Detectar si la app se est®¢ ejecutando como PWA
+function isPWAMode() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true ||
+           window.matchMedia('(display-mode: fullscreen)').matches;
+}
+
+// Inicializaci®Æn PWA
+window.addEventListener('DOMContentLoaded', () => {
+    if (isPWAMode()) {
+        console.log('?? PWA: Aplicaci®Æn ejecut®¢ndose en modo standalone');
+        showNotification('Tool Center iniciado correctamente', 'success');
+        
+        // Agregar clase CSS para PWA
+        document.body.classList.add('pwa-mode');
+        
+        // Ocultar elementos espec®™ficos del navegador si es necesario
+        const style = document.createElement('style');
+        style.textContent = `
+            .pwa-mode .version-info {
+                bottom: 50px !important;
+            }
+        `;
+        document.head.appendChild(style);
+    } else {
+        console.log('?? PWA: Aplicaci®Æn ejecut®¢ndose en navegador web');
+    }
+});
+
+// Manejar la conectividad para PWA
+window.addEventListener('online', () => {
+    console.log('?? PWA: Conexi®Æn restablecida');
+    if (isPWAMode()) {
+        showNotification('Conexi®Æn restablecida - Sincronizando...', 'success');
+    }
+});
+
+window.addEventListener('offline', () => {
+    console.log('?? PWA: Modo offline activado');
+    if (isPWAMode()) {
+        showNotification('Modo offline - Los datos se guardar®¢n localmente', 'warning');
+    }
+});
             console.log('È¶ÉÊÆå Iniciando Sistema de Cotizaciones v1.0');
             
             // Inicializar Supabase
@@ -2973,7 +3186,7 @@
         ‚úèÔ∏è Editar
     </button>
     <button class="btn-action btn-eliminar" onclick="deleteCliente('${cliente.nit}')">
-        üóëÔ∏è Eliminar
+        üóëÔ∏?Eliminar
     </button>
 </div>
 </div>
@@ -3063,7 +3276,7 @@
                         </div>
                         
                         <div class="filter-group">
-                            <label>üè∑Ô∏è Estado:</label>
+                            <label>üè∑Ô∏?Estado:</label>
                             <select id="filterEstado" class="filter-select" onchange="filterProductos()">
                                 <option value="">Todos</option>
                                 <option value="activo">Activos</option>
@@ -3092,7 +3305,7 @@
                         <form id="formProducto" onsubmit="saveProducto(event)">
                             <!-- Secci√≥n de imagen -->
                             <div class="image-upload-section">
-                                <label>üñºÔ∏è Foto del Producto</label>
+                                <label>üñºÔ∏?Foto del Producto</label>
                                 <div class="image-upload" id="imageUploadArea" 
                                      onclick="triggerFileInput()"
                                      ondrop="handleDrop(event)" 
@@ -3238,7 +3451,7 @@
                     alert.innerHTML = '‚ö†Ô∏è Stock por debajo del m√≠nimo - Alerta de STOCK BAJO';
                 } else {
                     alert.className = 'stock-alert alert-info';
-                    alert.innerHTML = '‚úÖ Stock normal - El producto se mostrar√° disponible';
+                    alert.innerHTML = '‚ú?Stock normal - El producto se mostrar√° disponible';
                 }
             };
             
@@ -3501,9 +3714,9 @@
                container.innerHTML = filteredProductos.map(producto => {
     const stockStatus = getStockStatus(producto);
     const stockIcon = {
-        normal: '‚úÖ',
+        normal: '‚ú?,
         bajo: '‚ö†Ô∏è',
-        agotado: '‚ùå'
+        agotado: '‚ù?
     }[stockStatus];
                     
                     return `
@@ -3529,7 +3742,7 @@
                                 </div>
                                 
                                 <div class="producto-fecha">
-                                    üè∑Ô∏è ${formatDate(producto.fecha_hora_creacion)}
+                                    üè∑Ô∏?${formatDate(producto.fecha_hora_creacion)}
                                 </div>
                                 
                                 <div class="producto-actions">
@@ -3676,7 +3889,7 @@
                         </div>
                         
                         <div class="filter-group">
-                            <label>üè∑Ô∏è Per√≠odo:</label>
+                            <label>üè∑Ô∏?Per√≠odo:</label>
                             <select id="filterPeriodo" class="filter-select" onchange="filterEntradas()">
                                 <option value="">Todo el tiempo</option>
                                 <option value="hoy">Hoy</option>
@@ -3691,7 +3904,7 @@
                         <table class="entradas-table" id="entradasTable">
                             <thead>
                                 <tr>
-                                    <th>üè∑Ô∏è Fecha</th>
+                                    <th>üè∑Ô∏?Fecha</th>
                                     <th>üì¶ Producto</th>
                                     <th>üì• Motivo</th>
                                     <th>üì¶ Cantidad</th>
@@ -4438,7 +4651,7 @@
                         </div>
                         
                         <div class="filter-group">
-                            <label>üè∑Ô∏è Per√≠odo:</label>
+                            <label>üè∑Ô∏?Per√≠odo:</label>
                             <select id="filterPeriodo" class="filter-select" onchange="filterCotizaciones()">
                                 <option value="">Todo el tiempo</option>
                                 <option value="hoy">Hoy</option>
@@ -5250,7 +5463,7 @@ if (!window.jsPDF) {
                         </div>
                         <div class="cantidad-controls">
                             <button class="btn-cantidad" onclick="updateCantidadProducto('${producto.codigo}', ${producto.cantidad - 1})">
-                                Èà≠?
+                                Èà?
                             </button>
                             <input type="number" class="cantidad-input" value="${producto.cantidad}" min="1" 
                                    onchange="updateCantidadProducto('${producto.codigo}', parseInt(this.value))">
@@ -5263,7 +5476,7 @@ if (!window.jsPDF) {
                                 ${formatCurrency(producto.subtotal)}
                             </div>
                             <button class="btn-eliminar-producto" onclick="removeProductoFromCotizacion('${producto.codigo}')">
-                                üóëÔ∏è
+                                üóëÔ∏?
                             </button>
                         </div>
                     </div>
@@ -5465,7 +5678,7 @@ if (!window.jsPDF) {
                         </div>
                         <div class="cotizacion-info">
                             <div class="cotizacion-cliente">${cotizacion.nombre_cliente}</div>
-                            <div class="cotizacion-fecha">üè∑Ô∏è ${formatDate(cotizacion.fecha_hora)}</div>
+                            <div class="cotizacion-fecha">üè∑Ô∏?${formatDate(cotizacion.fecha_hora)}</div>
                             
                             <div class="cotizacion-resumen">
                                 <div class="resumen-total">
@@ -5493,28 +5706,28 @@ if (!window.jsPDF) {
                     case 'Pendiente':
                         return baseActions + `
                             <button class="btn-cotizacion btn-cotizacion-confirmar" onclick="confirmarVenta('${cotizacion.consecutivo}')">
-                                ‚úÖ Confirmar Venta
+                                ‚ú?Confirmar Venta
                             </button>
                             <button class="btn-cotizacion btn-cotizacion-anular" onclick="anularCotizacion('${cotizacion.consecutivo}')">
-                                 ‚ùå Anular
+                                 ‚ù?Anular
                             </button>
                         `;
                     case 'Enviada':
                         return baseActions + `
                             <button class="btn-cotizacion btn-cotizacion-confirmar" onclick="confirmarVenta('${cotizacion.consecutivo}')">
-                                ‚úÖ Confirmar Venta
+                                ‚ú?Confirmar Venta
                             </button>
                         `;
                     case 'Vendida':
                         return baseActions + `
                             <div style="color: #059669; font-size: 12px; text-align: center; padding: 8px;">
-                                ‚úÖ Venta confirmada
+                                ‚ú?Venta confirmada
                             </div>
                         `;
                     case 'Anulada':
                         return baseActions + `
                             <div style="color: #dc2626; font-size: 12px; text-align: center; padding: 8px;">
-                                ‚ùå Cotizaci√≥n anulada
+                                ‚ù?Cotizaci√≥n anulada
                             </div>
                         `;
                     default:
@@ -5530,7 +5743,7 @@ if (!window.jsPDF) {
                 
                 document.getElementById('cotizacionesStats').innerHTML = `
                     <div class="stat-card-cotizaciones pendiente">
-                        <div class="stat-icon">‚è≥</div>
+                        <div class="stat-icon">‚è?/div>
                         <div class="stat-value">${pendientes}</div>
                         <div class="stat-description">Pendientes</div>
                     </div>
@@ -5540,12 +5753,12 @@ if (!window.jsPDF) {
                         <div class="stat-description">Enviadas</div>
                     </div>
                     <div class="stat-card-cotizaciones vendida">
-                        <div class="stat-icon">‚úÖ</div>
+                        <div class="stat-icon">‚ú?/div>
                         <div class="stat-value">${vendidas}</div>
                         <div class="stat-description">Vendidas</div>
                     </div>
                     <div class="stat-card-cotizaciones anulada">
-                        <div class="stat-icon">‚ùå</div>
+                        <div class="stat-icon">‚ù?/div>
                         <div class="stat-value">${anuladas}</div>
                         <div class="stat-description">Anuladas</div>
                     </div>
@@ -5703,7 +5916,7 @@ if (!window.jsPDF) {
                             <div class="zona-form">
                                 <input type="text" id="nuevaZonaId" placeholder="ID (ej: zona6)" maxlength="10">
                                 <input type="text" id="nuevaZonaNombre" placeholder="Nombre de la zona" maxlength="100">
-                                <button onclick="addZona()">ÈâÉ?Agregar Zona</button>
+                                <button onclick="addZona()">Èâ?Agregar Zona</button>
                             </div>
                             
                             <div id="zonasGrid" class="zonas-grid">
@@ -5727,7 +5940,7 @@ if (!window.jsPDF) {
                                 </div>
                                 
                                 <div class="config-item">
-                                    <h4>üè∑Ô∏è Validez Cotizaci√≥n</h4>
+                                    <h4>üè∑Ô∏?Validez Cotizaci√≥n</h4>
                                     <p class="description">D√≠as de validez por defecto para cotizaciones</p>
                                     <input type="number" id="validezCotizacion" min="1" max="365" value="30">
                                 </div>
@@ -6328,7 +6541,7 @@ if (!window.jsPDF) {
                                         <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; 
                                                      background: ${cliente.activo ? '#d1fae5' : '#fee2e2'}; 
                                                      color: ${cliente.activo ? '#065f46' : '#991b1b'};">
-                                            ${cliente.activo ? '‚úÖ Activo' : '‚ùå Inactivo'}
+                                            ${cliente.activo ? '‚ú?Activo' : '‚ù?Inactivo'}
                                         </span>
                                     </td>
                                     <td>${formatDate(cliente.fecha_creacion)}</td>
@@ -6366,9 +6579,9 @@ if (!window.jsPDF) {
             const valorTotal = productos.reduce((sum, p) => sum + (p.stock_actual * (p.precio_actual || 0)), 0);
             
             function getStockStatus(producto) {
-                if (producto.stock_actual === 0) return { text: '‚ùå Agotado', color: '#ef4444' };
+                if (producto.stock_actual === 0) return { text: '‚ù?Agotado', color: '#ef4444' };
                 if (producto.stock_actual <= producto.stock_minimo) return { text: '‚ö†Ô∏è Stock Bajo', color: '#f59e0b' };
-                return { text: '‚úÖ Normal', color: '#10b981' };
+                return { text: '‚ú?Normal', color: '#10b981' };
             }
             
             document.getElementById('informeTitle').textContent = 'üì¶ Informe de Productos';
@@ -6423,7 +6636,7 @@ if (!window.jsPDF) {
                                         <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; 
                                                      background: ${producto.activo ? '#d1fae5' : '#fee2e2'}; 
                                                      color: ${producto.activo ? '#065f46' : '#991b1b'};">
-                                            ${producto.activo ? '‚úÖ Activo' : '‚ùå Inactivo'}
+                                            ${producto.activo ? '‚ú?Activo' : '‚ù?Inactivo'}
                                         </span>
                                     </td>
                                     <td>${formatDate(producto.fecha_hora_creacion)}</td>
@@ -6574,10 +6787,10 @@ if (!window.jsPDF) {
             
             function getEstadoBadge(estado) {
                 const estados = {
-                    'Pendiente': { bg: '#fef3c7', color: '#92400e', icon: '‚è≥' },
+                    'Pendiente': { bg: '#fef3c7', color: '#92400e', icon: '‚è? },
                     'Enviada': { bg: '#dbeafe', color: '#1d4ed8', icon: 'üìß' },
-                    'Vendida': { bg: '#d1fae5', color: '#065f46', icon: '‚úÖ' },
-                    'Anulada': { bg: '#fee2e2', color: '#991b1b', icon: '‚ùå' }
+                    'Vendida': { bg: '#d1fae5', color: '#065f46', icon: '‚ú? },
+                    'Anulada': { bg: '#fee2e2', color: '#991b1b', icon: '‚ù? }
                 };
                 const est = estados[estado] || estados['Pendiente'];
                 return `<span style="padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; background: ${est.bg}; color: ${est.color};">${est.icon} ${estado.toUpperCase()}</span>`;
@@ -7038,12 +7251,12 @@ if (!window.jsPDF) {
         - registerAction()
 
         NAVEGACIËÑ´N (MËÑ´DULOS A DESARROLLAR):
-        - showClientes()      Èà´?Desarrollar primero
-        - showProductos()     Èà´?Segundo
-        - showEntradas()      Èà´?Tercero
-        - showCotizaciones()  Èà´?Cuarto
-        - showParametros()    Èà´?Quinto
-        - showInformes()      Èà´?Sexto
+        - showClientes()      Èà?Desarrollar primero
+        - showProductos()     Èà?Segundo
+        - showEntradas()      Èà?Tercero
+        - showCotizaciones()  Èà?Cuarto
+        - showParametros()    Èà?Quinto
+        - showInformes()      Èà?Sexto
 
         UTILIDADES SUPABASE:
         - executeQuery()
