@@ -6805,31 +6805,91 @@ if (!window.jsPDF) {
             const year = d.getFullYear();
             return `${day}/${month}/${year}`;
         }
-        
         async function generateConsecutivo() {
-            const year = new Date().getFullYear();
+    const year = new Date().getFullYear();
+    
+    try {
+        if (isOnlineStatus && supabase) {
+            // Usar función PostgreSQL con el parámetro correcto
+            const { data, error } = await supabase
+                .rpc('generar_consecutivo_cotizacion', { 'año_param': year });
             
-            try {
-                if (isOnlineStatus && supabase) {
-                    // Usar función PostgreSQL
-                    const { data, error } = await supabase
-                        .rpc('generar_consecutivo_cotizacion', { a帽o_param: year });
-                    
-                    if (error) throw error;
-                    return data;
-                } else {
-                    // Generar consecutivo offline
-                    const lastConsec = localStorage.getItem(`consecutivo_${year}`) || '0';
-                    const newConsec = parseInt(lastConsec) + 1;
-                    localStorage.setItem(`consecutivo_${year}`, newConsec.toString());
-                    return `COT-${year}-${String(newConsec).padStart(3, '0')}`;
-                }
-                
-            } catch (error) {
-                console.error('Error generando consecutivo:', error);
-                return `COT-${year}-ERR`;
+            if (error) {
+                console.error('Error en función PostgreSQL:', error);
+                // En lugar de retornar ERR, generar consecutivo manual
+                return await generateConsecutivoManual(year);
+            }
+            return data;
+        } else {
+            return await generateConsecutivoManual(year);
+        }
+        
+    } catch (error) {
+        console.error('Error generando consecutivo:', error);
+        // En lugar de retornar ERR, generar consecutivo manual
+        return await generateConsecutivoManual(year);
+    }
+}
+
+// Función auxiliar para generar consecutivo manualmente
+async function generateConsecutivoManual(year) {
+    try {
+        // Obtener el último consecutivo real de la base de datos
+        const { data: cotizaciones } = await supabase
+            .from('cotizaciones')
+            .select('consecutivo')
+            .like('consecutivo', `COT-${year}-%`)
+            .order('consecutivo', { ascending: false })
+            .limit(1);
+        
+        let nextNumber = 1;
+        
+        if (cotizaciones && cotizaciones.length > 0) {
+            const lastConsecutivo = cotizaciones[0].consecutivo;
+            const lastNumber = parseInt(lastConsecutivo.split('-')[2]);
+            if (!isNaN(lastNumber)) {
+                nextNumber = lastNumber + 1;
             }
         }
+        
+        // Verificar que no exista el consecutivo
+        let attempts = 0;
+        while (attempts < 100) { // Máximo 100 intentos
+            const newConsecutivo = `COT-${year}-${String(nextNumber).padStart(3, '0')}`;
+            
+            const { data: existing } = await supabase
+                .from('cotizaciones')
+                .select('consecutivo')
+                .eq('consecutivo', newConsecutivo)
+                .single();
+            
+            if (!existing) {
+                // Actualizar tabla consecutivos
+                await supabase
+                    .from('consecutivos')
+                    .upsert({
+                        año: year,
+                        tipo: 'cotizacion',
+                        ultimo_numero: nextNumber
+                    });
+                
+                return newConsecutivo;
+            }
+            
+            nextNumber++;
+            attempts++;
+        }
+        
+        // Si llegamos aquí, algo está muy mal
+        throw new Error('No se pudo generar consecutivo después de 100 intentos');
+        
+    } catch (error) {
+        console.error('Error en generación manual:', error);
+        // Como último recurso, usar timestamp
+        const timestamp = Date.now().toString().slice(-6);
+        return `COT-${year}-T${timestamp}`;
+    }
+}
         
         function isOnline() {
             return isOnlineStatus;
@@ -7082,3 +7142,4 @@ if (!window.jsPDF) {
     </script>
 </body>
 </html>
+
