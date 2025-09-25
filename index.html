@@ -7242,7 +7242,16 @@ async function initOfflineSystem() {
         // ============================================
         // FUNCIONES EXPORTADAS PARA PR脫XIMOS CHATS
         // ============================================
-        
+        // Función para limpiar cache manualmente (opcional)
+async function clearAppCache() {
+    if ('serviceWorker' in navigator && 'caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(
+            cacheNames.map(name => caches.delete(name))
+        );
+        showNotification('Cache limpiado correctamente', 'success');
+    }
+}
         /*
         LISTA DE FUNCIONES CREADAS PARA CONTINUAR EN PR脫XIMOS CHATS:
 
@@ -7301,5 +7310,6 @@ if ('serviceWorker' in navigator) {
     </script>
 </body>
 </html>
+
 
 
