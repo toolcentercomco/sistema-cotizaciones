@@ -2416,38 +2416,35 @@
         let currentUser = null;
         let isOnlineStatus = navigator.onLine;
         let db = null; // IndexedDB instance
-        
+        const offlineManager = new OfflineManager();
+        let syncIndicator = null;
         // ============================================
         // INICIALIZACI脫N
         // ============================================
         
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('馃殌 Iniciando Sistema de Cotizaciones v1.0');
-            
-            // Inicializar Supabase
-            const supabaseReady = initSupabase();
-            
-            // Inicializar base de datos local
-            await initIndexedDB();
-            
-            // Configurar eventos de conectividad
-            setupConnectivityEvents();
-            
-            // Configurar formulario de login
-            setupLoginForm();
-            
-            // Verificar sesión existente
-            checkExistingSession();
-            
-            updateConnectionStatus();
-            
-            if (supabaseReady) {
-                showNotification('Sistema listo - Conectado a Supabase', 'success');
-            } else {
-                showNotification('Sistema listo - Solo modo offline', 'warning');
-            }
-        });
-
+    console.log('🚀 Iniciando Sistema de Cotizaciones v1.0');
+    
+    // Inicializar Supabase
+    const supabaseReady = initSupabase();
+    
+    // Inicializar sistema offline COMPLETO (en lugar de solo initIndexedDB)
+    await initOfflineSystem();
+    
+    // Configurar formulario de login
+    setupLoginForm();
+    
+    // Verificar sesión existente
+    checkExistingSession();
+    
+    updateConnectionStatus();
+    
+    if (supabaseReady) {
+        showNotification('Sistema listo - Conectado con sincronización automática', 'success');
+    } else {
+        showNotification('Sistema listo - Modo offline con sincronización pendiente', 'warning');
+    }
+});
         // ============================================
         // FUNCIONES DE AUTENTICACI脫N
         // ============================================
@@ -6684,41 +6681,52 @@ if (!window.jsPDF) {
         // ============================================
         
         async function executeQuery(table, action, data) {
-            try {
-                if (!isOnlineStatus || !supabase) {
-                    // Guardar para sincronización posterior
-                    await saveOffline(table, { action, data, timestamp: new Date().toISOString() });
-                    return { success: true, offline: true };
-                }
-                
-                let result;
-                
-                switch (action) {
-                    case 'select':
-                        result = await supabase.from(table).select(data.select || '*');
-                        break;
-                    case 'insert':
-                        result = await supabase.from(table).insert(data);
-                        break;
-                    case 'update':
-                        result = await supabase.from(table).update(data.updates).eq(data.where.column, data.where.value);
-                        break;
-                    case 'delete':
-                        result = await supabase.from(table).delete().eq(data.column, data.value);
-                        break;
-                    default:
-                        throw new Error('Acción no válida');
-                }
-                
-                if (result.error) throw result.error;
-                
-                return { success: true, data: result.data };
-                
-            } catch (error) {
-                console.error('Error en executeQuery:', error);
-                throw error;
+    try {
+        if (isOnlineStatus && supabase) {
+            // Online: ejecutar directamente en Supabase
+            let result;
+            
+            switch (action) {
+                case 'select':
+                    result = await supabase.from(table).select(data.select || '*');
+                    break;
+                case 'insert':
+                    result = await supabase.from(table).insert(data);
+                    break;
+                case 'update':
+                    result = await supabase.from(table).update(data.updates).eq(data.where.column, data.where.value);
+                    break;
+                case 'delete':
+                    result = await supabase.from(table).delete().eq(data.column, data.value);
+                    break;
             }
+            
+            if (result.error) throw result.error;
+            
+            // También guardar en cache local para acceso offline
+            if (action === 'select' && result.data) {
+                await cacheDataLocally(table, result.data);
+            }
+            
+            return { success: true, data: result.data };
+            
+        } else {
+            // Offline: usar OfflineManager
+            return await offlineManager.executeOffline(table, action, data);
         }
+        
+    } catch (error) {
+        console.error('Error en executeQuery:', error);
+        
+        // Si falla online, intentar offline como fallback
+        if (isOnlineStatus) {
+            console.log('💾 Fallback a modo offline...');
+            return await offlineManager.executeOffline(table, action, data);
+        }
+        
+        throw error;
+    }
+}
         
         async function syncToCloud() {
             if (!isOnlineStatus || !supabase) return false;
@@ -6898,32 +6906,59 @@ async function generateConsecutivoManual(year) {
         // ============================================
         // FUNCIONES INDEXEDDB (OFFLINE)
         // ============================================
-        
         async function initIndexedDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open('CotizacionesDB', 1);
-                
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => {
-                    db = request.result;
-                    resolve(db);
-                };
-                
-                request.onupgradeneeded = (event) => {
-                    db = event.target.result;
-                    
-                    // Crear stores para cada tabla
-                    const stores = ['clientes', 'productos', 'entradas', 'cotizaciones', 'parametros', 'zonas', 'sync_pending'];
-                    
-                    stores.forEach(storeName => {
-                        if (!db.objectStoreNames.contains(storeName)) {
-                            const store = db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
-                            store.createIndex('timestamp', 'timestamp', { unique: false });
-                        }
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('CotizacionesDB', 2); // Incrementar versión
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            db = request.result;
+            console.log('✅ IndexedDB inicializada correctamente');
+            resolve(db);
+        };
+        
+        request.onupgradeneeded = (event) => {
+            db = event.target.result;
+            console.log('🔄 Actualizando estructura de IndexedDB...');
+            
+            // Definir todas las tablas con sus claves primarias correctas
+            const tables = [
+                { name: 'clientes', keyPath: 'nit' },
+                { name: 'productos', keyPath: 'codigo' },
+                { name: 'entradas', keyPath: 'id', autoIncrement: true },
+                { name: 'cotizaciones', keyPath: 'id_cotizacion', autoIncrement: true },
+                { name: 'cotizacion_detalle', keyPath: 'id', autoIncrement: true },
+                { name: 'parametros', keyPath: 'id' },
+                { name: 'zonas', keyPath: 'id' },
+                { name: 'usuarios', keyPath: 'id', autoIncrement: true },
+                { name: 'consecutivos', keyPath: ['año', 'tipo'] },
+                { name: 'historial', keyPath: 'id', autoIncrement: true },
+                { name: 'sync_pending', keyPath: 'id', autoIncrement: true },
+                { name: 'sync_conflicts', keyPath: 'id', autoIncrement: true }
+            ];
+            
+            tables.forEach(table => {
+                if (!db.objectStoreNames.contains(table.name)) {
+                    const store = db.createObjectStore(table.name, { 
+                        keyPath: table.keyPath, 
+                        autoIncrement: table.autoIncrement || false 
                     });
-                };
+                    
+                    // Índices útiles
+                    store.createIndex('timestamp', 'timestamp', { unique: false });
+                    store.createIndex('synced', 'synced', { unique: false });
+                    
+                    if (table.name === 'sync_pending') {
+                        store.createIndex('table', 'table', { unique: false });
+                        store.createIndex('action', 'action', { unique: false });
+                    }
+                    
+                    console.log(`📦 Tabla creada: ${table.name}`);
+                }
             });
-        }
+        };
+    });
+}
         
         async function saveOffline(table, data) {
             return new Promise((resolve, reject) => {
@@ -6942,17 +6977,42 @@ async function generateConsecutivoManual(year) {
             });
         }
         
-        async function getOffline(table) {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction([table], 'readonly');
-                const store = transaction.objectStore(table);
-                const request = store.getAll();
-                
-                request.onsuccess = () => resolve(request.result || []);
-                request.onerror = () => reject(request.error);
-            });
-        }
+        async function getOffline(table, filter = null) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([table], 'readonly');
+        const store = transaction.objectStore(table);
+        const request = store.getAll();
         
+        request.onsuccess = () => {
+            let results = request.result || [];
+            
+            // Filtrar si es necesario
+            if (filter) {
+                results = results.filter(item => {
+                    return Object.keys(filter).every(key => 
+                        item[key] === filter[key]
+                    );
+                });
+            }
+            
+            // Filtrar metadatos internos para mostrar datos limpios
+            results = results.map(item => {
+                const cleaned = { ...item };
+                delete cleaned._offline_created;
+                delete cleaned._offline_modified;
+                delete cleaned._offline_timestamp;
+                delete cleaned._server_synced;
+                delete cleaned._server_timestamp;
+                delete cleaned._cached;
+                delete cleaned._cache_timestamp;
+                return cleaned;
+            });
+            
+            resolve(results);
+        };
+        request.onerror = () => reject(request.error);
+    });
+}        
         async function removeFromOfflineSync(id) {
             return new Promise((resolve, reject) => {
                 const transaction = db.transaction(['sync_pending'], 'readwrite');
@@ -6974,33 +7034,34 @@ async function generateConsecutivoManual(year) {
         }
         
         async function handleOnline() {
-            isOnlineStatus = true;
-            updateConnectionStatus();
-            showNotification('Conexión restablecida', 'success');
-            
-            // Intentar sincronización automática
-            await syncToCloud();
-            await syncFromCloud();
-        }
-        
-        function handleOffline() {
-            isOnlineStatus = false;
-            updateConnectionStatus();
-            showNotification('Modo offline activado', 'warning');
-        }
-        
+    isOnlineStatus = true;
+    updateConnectionStatus();
+    showNotification('Conexión restablecida - Sincronizando...', 'info');
+    
+    // Sincronización automática al recuperar conexión
+    await offlineManager.performSync();
+}
+
+function handleOffline() {
+    isOnlineStatus = false;
+    updateConnectionStatus();
+    showNotification('Modo offline - Los datos se sincronizarán cuando haya conexión', 'warning');
+}
         function updateConnectionStatus() {
-            const dot = document.getElementById('connectionDot');
-            const status = document.getElementById('connectionStatus');
-            
-            if (isOnlineStatus) {
-                dot.classList.remove('offline');
-                status.textContent = 'En línea';
-            } else {
-                dot.classList.add('offline');
-                status.textContent = 'Sin conexión';
-            }
-        }
+    const dot = document.getElementById('connectionDot');
+    const status = document.getElementById('connectionStatus');
+    
+    if (isOnlineStatus) {
+        dot.classList.remove('offline');
+        status.textContent = 'En línea';
+        
+        // Mostrar indicador de sincronización si hay datos pendientes
+        checkPendingSyncStatus();
+    } else {
+        dot.classList.add('offline');
+        status.textContent = 'Sin conexión';
+    }
+}
         
         function updateLastSync() {
             const now = new Date();
@@ -7015,7 +7076,88 @@ async function generateConsecutivoManual(year) {
         // ============================================
         // FUNCIONES DE SOPORTE
         // ============================================
+
+        // 8. AGREGAR FUNCIÓN PARA VERIFICAR ESTADO DE SINCRONIZACIÓN:
+async function checkPendingSyncStatus() {
+    try {
+        const pending = await offlineManager.getPendingSync();
+        const lastSyncElement = document.getElementById('lastSync');
         
+        if (pending.length > 0) {
+            lastSyncElement.innerHTML = `🔄 ${pending.length} cambio${pending.length > 1 ? 's' : ''} pendiente${pending.length > 1 ? 's' : ''}`;
+            lastSyncElement.style.color = '#f59e0b';
+        } else {
+            const lastSyncTime = localStorage.getItem('lastSync');
+            if (lastSyncTime) {
+                const time = new Date(lastSyncTime).toLocaleTimeString('es-CO', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                lastSyncElement.innerHTML = `✅ Última sincronización: ${time}`;
+                lastSyncElement.style.color = '#10b981';
+            }
+        }
+    } catch (error) {
+        console.error('Error verificando estado de sincronización:', error);
+    }
+}
+
+// 9. AGREGAR FUNCIONES AUXILIARES NECESARIAS:
+async function cacheDataLocally(table, data) {
+    if (!data || !Array.isArray(data)) return;
+    
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([table], 'readwrite');
+        const store = transaction.objectStore(table);
+        
+        let processed = 0;
+        data.forEach(item => {
+            const putRequest = store.put({
+                ...item,
+                _cached: true,
+                _cache_timestamp: new Date().toISOString()
+            });
+            putRequest.onsuccess = () => {
+                processed++;
+                if (processed === data.length) resolve();
+            };
+            putRequest.onerror = () => {
+                processed++;
+                if (processed === data.length) resolve(); // Continuar aunque falle alguno
+            };
+        });
+        
+        if (data.length === 0) resolve();
+    });
+}
+
+async function initOfflineSystem() {
+    try {
+        // Inicializar IndexedDB
+        await initIndexedDB();
+        
+        // Configurar eventos de conectividad
+        setupConnectivityEvents();
+        
+        // Si hay conexión, sincronizar datos iniciales
+        if (isOnlineStatus && supabase) {
+            await offlineManager.syncFromServer();
+        }
+        
+        // Configurar sincronización periódica cada 5 minutos
+        setInterval(() => {
+            if (isOnlineStatus) {
+                offlineManager.performSync();
+            }
+        }, 300000);
+        
+        console.log('✅ Sistema offline inicializado correctamente');
+        
+    } catch (error) {
+        console.error('❌ Error inicializando sistema offline:', error);
+    }
+}
+		
         async function registerAction(action, table, id, detail) {
             try {
                 const logEntry = {
@@ -7138,8 +7280,26 @@ async function generateConsecutivoManual(year) {
         Para continuar en próximos chats, usar:
         "Desarrollar función showClientes()" (o cualquier función de la lista)
         */
-        
+// Registro del Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+        try {
+            const registration = await navigator.serviceWorker.register('./sw.js');
+            console.log('✅ Service Worker registrado:', registration.scope);
+        } catch (error) {
+            console.log('❌ Error registrando Service Worker:', error);
+        }
+    });
+    
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data.type === 'BACKGROUND_SYNC' && offlineManager) {
+            offlineManager.performSync();
+        }
+    });
+}
+		
     </script>
 </body>
 </html>
+
 
