@@ -2317,16 +2317,20 @@
         </div>
 
         <!-- STATUS BAR -->
-        <div class="status-bar">
-            <div class="status-indicator">
-                <div class="status-dot" id="connectionDot"></div>
-                <span id="connectionStatus">En línea</span>
-            </div>
-            <div>
-                <span id="lastSync">🔄 Última sincronización: --:--</span>
-            </div>
-        </div>
-
+<div class="status-bar">
+    <div class="status-indicator">
+        <div class="status-dot" id="connectionDot"></div>
+        <span id="connectionStatus">En línea</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <span id="lastSync">Última sincronización: --:--</span>
+        <button onclick="forzarSincronizacion()" 
+                id="btnSincronizar"
+                style="background: #10b981; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+            Sincronizar ahora
+        </button>
+    </div>
+</div>
         <!-- MENU GRID -->
 <div id="menuScreen">
     <div class="menu-grid">
@@ -2668,6 +2672,46 @@ getPrimaryKeyValue(table, item) {
     return item[column];
 }
 // Agregar esta función para debugging jd
+// Forzar sincronización manual
+async function forzarSincronizacion() {
+    const btn = document.getElementById('btnSincronizar');
+    
+    if (!isOnlineStatus) {
+        showNotification('No hay conexión a internet', 'warning');
+        return;
+    }
+    
+    if (!supabase) {
+        showNotification('Supabase no está inicializado', 'error');
+        return;
+    }
+    
+    // Cambiar texto del botón
+    btn.textContent = 'Sincronizando...';
+    btn.disabled = true;
+    
+    try {
+        await offlineManager.performSync();
+        showNotification('Sincronización completada exitosamente', 'success');
+    } catch (error) {
+        console.error('Error en sincronización:', error);
+        showNotification('Error al sincronizar: ' + error.message, 'error');
+    } finally {
+        btn.textContent = 'Sincronizar ahora';
+        btn.disabled = false;
+    }
+}
+
+// Ver pendientes de sincronización (para debugging)
+async function verPendientesSincronizacion() {
+    const pending = await offlineManager.getPendingSync();
+    console.log('Operaciones pendientes de sincronización:', pending.length);
+    pending.forEach((op, index) => {
+        console.log(`${index + 1}. ${op.action} en ${op.table}:`, op.data);
+    });
+    return pending;
+}
+	
 async function verPendientesSincronizacion() {
     const pending = await offlineManager.getPendingSync();
     console.log('📋 Operaciones pendientes de sincronización:', pending.length);
@@ -7387,16 +7431,36 @@ function handleOffline() {
     updateConnectionStatus();
     showNotification('Modo offline - Los datos se sincronizarán cuando haya conexión', 'warning');
 }
-        function updateConnectionStatus() {
+        async function updateConnectionStatus() {
     const dot = document.getElementById('connectionDot');
     const status = document.getElementById('connectionStatus');
+    const lastSyncElement = document.getElementById('lastSync');
     
     if (isOnlineStatus) {
         dot.classList.remove('offline');
         status.textContent = 'En línea';
         
-        // Mostrar indicador de sincronización si hay datos pendientes
-        checkPendingSyncStatus();
+        // Verificar pendientes
+        try {
+            const pending = await offlineManager.getPendingSync();
+            
+            if (pending.length > 0) {
+                lastSyncElement.innerHTML = `${pending.length} cambio${pending.length > 1 ? 's' : ''} pendiente${pending.length > 1 ? 's' : ''}`;
+                lastSyncElement.style.color = '#f59e0b';
+            } else {
+                const lastSyncTime = localStorage.getItem('lastSync');
+                if (lastSyncTime) {
+                    const time = new Date(lastSyncTime).toLocaleTimeString('es-CO', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    lastSyncElement.innerHTML = `Última sincronización: ${time}`;
+                    lastSyncElement.style.color = '#10b981';
+                }
+            }
+        } catch (error) {
+            console.error('Error verificando pendientes:', error);
+        }
     } else {
         dot.classList.add('offline');
         status.textContent = 'Sin conexión';
@@ -7480,18 +7544,22 @@ async function initOfflineSystem() {
             await offlineManager.syncFromServer();
         }
         
-        setInterval(() => {
-            if (isOnlineStatus) {
-                offlineManager.performSync();
+        // Sincronización periódica cada 5 minutos
+        setInterval(async () => {
+            if (isOnlineStatus && supabase) {
+                console.log('Ejecutando sincronización periódica...');
+                await offlineManager.performSync();
             }
-        }, 300000);
+        }, 300000); // 5 minutos
         
-        console.log('✅ Sistema offline inicializado');
+        // Actualizar estado inicial
+        await updateConnectionStatus();
+        
+        console.log('Sistema offline inicializado');
     } catch (error) {
-        console.error('❌ Error inicializando sistema offline:', error);
+        console.error('Error inicializando sistema offline:', error);
     }
 }
-
 		
         async function registerAction(action, table, id, detail) {
             try {
@@ -7645,6 +7713,7 @@ if ('serviceWorker' in navigator) {
     </script>
 </body>
 </html>
+
 
 
 
