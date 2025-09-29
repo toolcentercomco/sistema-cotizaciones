@@ -2416,8 +2416,6 @@
         let currentUser = null;
         let isOnlineStatus = navigator.onLine;
         let db = null; // IndexedDB instance
-        const offlineManager = new OfflineManager();
-        let syncIndicator = null;
 		// CLASES COMPLETAS PARA EL SISTEMA OFFLINE
 class OfflineManager {
     constructor() {
@@ -2426,6 +2424,10 @@ class OfflineManager {
         this.conflictResolver = new ConflictResolver();
     }
 
+// jd
+        const offlineManager = new OfflineManager(); 
+        let syncIndicator = null;
+	
     async executeOffline(table, action, data, options = {}) {
         const operation = {
             id: Date.now() + Math.random(),
@@ -7546,6 +7548,7 @@ if ('serviceWorker' in navigator) {
     </script>
 </body>
 </html>
+
 
 
 
