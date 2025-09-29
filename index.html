@@ -2425,9 +2425,7 @@ class OfflineManager {
     }
 
 // jd
-        const offlineManager = new OfflineManager(); 
-        let syncIndicator = null;
-	
+     
     async executeOffline(table, action, data, options = {}) {
         const operation = {
             id: Date.now() + Math.random(),
@@ -2674,7 +2672,11 @@ class OfflineManager {
         return cleaned;
     }
 }
-
+   // aqui
+		const offlineManager = new OfflineManager(); 
+    let syncIndicator = null;
+	
+		
 class ConflictResolver {
     async resolve(table, localData, serverData) {
         if (localData._offline_created) {
@@ -7548,6 +7550,7 @@ if ('serviceWorker' in navigator) {
     </script>
 </body>
 </html>
+
 
 
 
