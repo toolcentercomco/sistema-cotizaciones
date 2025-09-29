@@ -2418,6 +2418,272 @@
         let db = null; // IndexedDB instance
         const offlineManager = new OfflineManager();
         let syncIndicator = null;
+		// CLASES COMPLETAS PARA EL SISTEMA OFFLINE
+class OfflineManager {
+    constructor() {
+        this.syncInProgress = false;
+        this.pendingOperations = [];
+        this.conflictResolver = new ConflictResolver();
+    }
+
+    async executeOffline(table, action, data, options = {}) {
+        const operation = {
+            id: Date.now() + Math.random(),
+            table,
+            action,
+            data,
+            timestamp: new Date().toISOString(),
+            synced: false,
+            retries: 0,
+            maxRetries: 3,
+            ...options
+        };
+
+        try {
+            const result = await this.executeLocalOperation(operation);
+            await this.savePendingSync(operation);
+            
+            if (isOnlineStatus) {
+                setTimeout(() => this.performSync(), 500);
+            }
+            
+            return { success: true, offline: true, operationId: operation.id, data: result };
+        } catch (error) {
+            console.error('Error en operación offline:', error);
+            throw error;
+        }
+    }
+
+    async executeLocalOperation(operation) {
+        const { table, action, data } = operation;
+        
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([table], 'readwrite');
+            const store = transaction.objectStore(table);
+            
+            switch (action) {
+                case 'insert':
+                    this.handleInsert(store, data, resolve, reject);
+                    break;
+                case 'update':
+                    this.handleUpdate(store, data, resolve, reject);
+                    break;
+                case 'delete':
+                    this.handleDelete(store, data, resolve, reject);
+                    break;
+                case 'select':
+                    this.handleSelect(store, data, resolve, reject);
+                    break;
+                default:
+                    reject(new Error(`Acción no soportada: ${action}`));
+            }
+        });
+    }
+
+    handleInsert(store, data, resolve, reject) {
+        if (Array.isArray(data)) {
+            const promises = data.map(item => {
+                const itemWithMeta = {
+                    ...item,
+                    _offline_created: true,
+                    _offline_timestamp: new Date().toISOString()
+                };
+                return new Promise((res, rej) => {
+                    const req = store.add(itemWithMeta);
+                    req.onsuccess = () => res(req.result);
+                    req.onerror = () => rej(req.error);
+                });
+            });
+            Promise.all(promises).then(resolve).catch(reject);
+        } else {
+            const dataWithMeta = {
+                ...data,
+                _offline_created: true,
+                _offline_timestamp: new Date().toISOString()
+            };
+            const request = store.add(dataWithMeta);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        }
+    }
+
+    handleUpdate(store, data, resolve, reject) {
+        const { updates, where } = data;
+        const getRequest = store.get(where.value);
+        
+        getRequest.onsuccess = () => {
+            const existing = getRequest.result;
+            if (existing) {
+                const updated = {
+                    ...existing,
+                    ...updates,
+                    _offline_modified: true,
+                    _offline_timestamp: new Date().toISOString()
+                };
+                const putRequest = store.put(updated);
+                putRequest.onsuccess = () => resolve(putRequest.result);
+                putRequest.onerror = () => reject(putRequest.error);
+            } else {
+                reject(new Error('Registro no encontrado'));
+            }
+        };
+        getRequest.onerror = () => reject(getRequest.error);
+    }
+
+    handleDelete(store, data, resolve, reject) {
+        const request = store.delete(data.value);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    }
+
+    handleSelect(store, data, resolve, reject) {
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+    }
+
+    async savePendingSync(operation) {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(['sync_pending'], 'readwrite');
+            const store = transaction.objectStore('sync_pending');
+            const request = store.add(operation);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async performSync() {
+        if (this.syncInProgress || !isOnlineStatus || !supabase) return;
+
+        this.syncInProgress = true;
+        console.log('🔄 Iniciando sincronización...');
+
+        try {
+            await this.syncPendingOperations();
+            await this.syncFromServer();
+            showNotification('Sincronización completada', 'success');
+            updateLastSync();
+            updateConnectionStatus();
+        } catch (error) {
+            console.error('Error en sincronización:', error);
+            showNotification('Error en sincronización', 'error');
+        } finally {
+            this.syncInProgress = false;
+        }
+    }
+
+    async syncPendingOperations() {
+        const pendingOps = await this.getPendingSync();
+        let syncCount = 0;
+
+        for (const operation of pendingOps) {
+            try {
+                await this.syncSingleOperation(operation);
+                await this.markAsSynced(operation.id);
+                syncCount++;
+            } catch (error) {
+                console.error('Error sincronizando:', error);
+            }
+        }
+        
+        if (syncCount > 0) {
+            console.log(`✅ Sincronizadas ${syncCount} operaciones`);
+        }
+    }
+
+    async syncSingleOperation(operation) {
+        const { table, action, data } = operation;
+        const cleanData = this.cleanOfflineMetadata(data);
+        
+        switch (action) {
+            case 'insert':
+                const { error: insertError } = await supabase
+                    .from(table)
+                    .insert(Array.isArray(cleanData) ? cleanData : [cleanData]);
+                if (insertError) throw insertError;
+                break;
+                
+            case 'update':
+                const { updates, where } = cleanData;
+                const { error: updateError } = await supabase
+                    .from(table)
+                    .update(updates)
+                    .eq(where.column, where.value);
+                if (updateError) throw updateError;
+                break;
+                
+            case 'delete':
+                const { error: deleteError } = await supabase
+                    .from(table)
+                    .delete()
+                    .eq(cleanData.column, cleanData.value);
+                if (deleteError) throw deleteError;
+                break;
+        }
+    }
+
+    async syncFromServer() {
+        const tables = ['parametros', 'zonas', 'clientes', 'productos'];
+        
+        for (const table of tables) {
+            try {
+                const { data, error } = await supabase.from(table).select('*');
+                if (error) throw error;
+                if (data) await cacheDataLocally(table, data);
+            } catch (error) {
+                console.error(`Error descargando ${table}:`, error);
+            }
+        }
+    }
+
+    getPendingSync() {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(['sync_pending'], 'readonly');
+            const store = transaction.objectStore('sync_pending');
+            const request = store.getAll();
+            request.onsuccess = () => resolve(request.result || []);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    markAsSynced(operationId) {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(['sync_pending'], 'readwrite');
+            const store = transaction.objectStore('sync_pending');
+            const request = store.delete(operationId);
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    cleanOfflineMetadata(data) {
+        if (Array.isArray(data)) {
+            return data.map(item => this.cleanSingleItem(item));
+        }
+        return this.cleanSingleItem(data);
+    }
+
+    cleanSingleItem(item) {
+        if (!item || typeof item !== 'object') return item;
+        const cleaned = { ...item };
+        delete cleaned._offline_created;
+        delete cleaned._offline_modified;
+        delete cleaned._offline_timestamp;
+        return cleaned;
+    }
+}
+
+class ConflictResolver {
+    async resolve(table, localData, serverData) {
+        if (localData._offline_created) {
+            return localData;
+        }
+        return serverData;
+    }
+}
+
+        
+		
         // ============================================
         // INICIALIZACI脫N
         // ============================================
@@ -6683,12 +6949,11 @@ if (!window.jsPDF) {
         async function executeQuery(table, action, data) {
     try {
         if (isOnlineStatus && supabase) {
-            // Online: ejecutar directamente en Supabase
             let result;
             
             switch (action) {
                 case 'select':
-                    result = await supabase.from(table).select(data.select || '*');
+                    result = await supabase.from(table).select(data?.select || '*');
                     break;
                 case 'insert':
                     result = await supabase.from(table).insert(data);
@@ -6703,27 +6968,19 @@ if (!window.jsPDF) {
             
             if (result.error) throw result.error;
             
-            // También guardar en cache local para acceso offline
             if (action === 'select' && result.data) {
                 await cacheDataLocally(table, result.data);
             }
             
             return { success: true, data: result.data };
-            
         } else {
-            // Offline: usar OfflineManager
             return await offlineManager.executeOffline(table, action, data);
         }
-        
     } catch (error) {
         console.error('Error en executeQuery:', error);
-        
-        // Si falla online, intentar offline como fallback
         if (isOnlineStatus) {
-            console.log('💾 Fallback a modo offline...');
             return await offlineManager.executeOffline(table, action, data);
         }
-        
         throw error;
     }
 }
@@ -6908,20 +7165,19 @@ async function generateConsecutivoManual(year) {
         // ============================================
         async function initIndexedDB() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('CotizacionesDB', 2); // Incrementar versión
+        const request = indexedDB.open('CotizacionesDB', 2);
         
         request.onerror = () => reject(request.error);
         request.onsuccess = () => {
             db = request.result;
-            console.log('✅ IndexedDB inicializada correctamente');
+            console.log('✅ IndexedDB inicializada');
             resolve(db);
         };
         
         request.onupgradeneeded = (event) => {
             db = event.target.result;
-            console.log('🔄 Actualizando estructura de IndexedDB...');
+            console.log('🔄 Actualizando IndexedDB...');
             
-            // Definir todas las tablas con sus claves primarias correctas
             const tables = [
                 { name: 'clientes', keyPath: 'nit' },
                 { name: 'productos', keyPath: 'codigo' },
@@ -6933,8 +7189,7 @@ async function generateConsecutivoManual(year) {
                 { name: 'usuarios', keyPath: 'id', autoIncrement: true },
                 { name: 'consecutivos', keyPath: ['año', 'tipo'] },
                 { name: 'historial', keyPath: 'id', autoIncrement: true },
-                { name: 'sync_pending', keyPath: 'id', autoIncrement: true },
-                { name: 'sync_conflicts', keyPath: 'id', autoIncrement: true }
+                { name: 'sync_pending', keyPath: 'id', autoIncrement: true }
             ];
             
             tables.forEach(table => {
@@ -6943,16 +7198,7 @@ async function generateConsecutivoManual(year) {
                         keyPath: table.keyPath, 
                         autoIncrement: table.autoIncrement || false 
                     });
-                    
-                    // Índices útiles
                     store.createIndex('timestamp', 'timestamp', { unique: false });
-                    store.createIndex('synced', 'synced', { unique: false });
-                    
-                    if (table.name === 'sync_pending') {
-                        store.createIndex('table', 'table', { unique: false });
-                        store.createIndex('action', 'action', { unique: false });
-                    }
-                    
                     console.log(`📦 Tabla creada: ${table.name}`);
                 }
             });
@@ -6986,7 +7232,6 @@ async function generateConsecutivoManual(year) {
         request.onsuccess = () => {
             let results = request.result || [];
             
-            // Filtrar si es necesario
             if (filter) {
                 results = results.filter(item => {
                     return Object.keys(filter).every(key => 
@@ -6995,7 +7240,6 @@ async function generateConsecutivoManual(year) {
                 });
             }
             
-            // Filtrar metadatos internos para mostrar datos limpios
             results = results.map(item => {
                 const cleaned = { ...item };
                 delete cleaned._offline_created;
@@ -7012,7 +7256,7 @@ async function generateConsecutivoManual(year) {
         };
         request.onerror = () => reject(request.error);
     });
-}        
+} 
         async function removeFromOfflineSync(id) {
             return new Promise((resolve, reject) => {
                 const transaction = db.transaction(['sync_pending'], 'readwrite');
@@ -7032,13 +7276,10 @@ async function generateConsecutivoManual(year) {
             window.addEventListener('online', handleOnline);
             window.addEventListener('offline', handleOffline);
         }
-        
         async function handleOnline() {
     isOnlineStatus = true;
     updateConnectionStatus();
     showNotification('Conexión restablecida - Sincronizando...', 'info');
-    
-    // Sincronización automática al recuperar conexión
     await offlineManager.performSync();
 }
 
@@ -7123,7 +7364,7 @@ async function cacheDataLocally(table, data) {
             };
             putRequest.onerror = () => {
                 processed++;
-                if (processed === data.length) resolve(); // Continuar aunque falle alguno
+                if (processed === data.length) resolve();
             };
         });
         
@@ -7133,30 +7374,25 @@ async function cacheDataLocally(table, data) {
 
 async function initOfflineSystem() {
     try {
-        // Inicializar IndexedDB
         await initIndexedDB();
-        
-        // Configurar eventos de conectividad
         setupConnectivityEvents();
         
-        // Si hay conexión, sincronizar datos iniciales
         if (isOnlineStatus && supabase) {
             await offlineManager.syncFromServer();
         }
         
-        // Configurar sincronización periódica cada 5 minutos
         setInterval(() => {
             if (isOnlineStatus) {
                 offlineManager.performSync();
             }
         }, 300000);
         
-        console.log('✅ Sistema offline inicializado correctamente');
-        
+        console.log('✅ Sistema offline inicializado');
     } catch (error) {
         console.error('❌ Error inicializando sistema offline:', error);
     }
 }
+
 		
         async function registerAction(action, table, id, detail) {
             try {
@@ -7310,6 +7546,7 @@ if ('serviceWorker' in navigator) {
     </script>
 </body>
 </html>
+
 
 
 
