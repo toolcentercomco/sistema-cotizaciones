@@ -2592,15 +2592,37 @@ class OfflineManager {
     }
 
     async syncSingleOperation(operation) {
-        const { table, action, data } = operation;
-        const cleanData = this.cleanOfflineMetadata(data);
-        
+    const { table, action, data } = operation;
+    const cleanData = this.cleanOfflineMetadata(data);
+    
+    try {
         switch (action) {
             case 'insert':
-                const { error: insertError } = await supabase
-                    .from(table)
-                    .insert(Array.isArray(cleanData) ? cleanData : [cleanData]);
-                if (insertError) throw insertError;
+                // Para insert, verificar si ya existe en el servidor
+                const dataArray = Array.isArray(cleanData) ? cleanData : [cleanData];
+                
+                for (const item of dataArray) {
+                    // Verificar existencia según la tabla
+                    const primaryKey = this.getPrimaryKeyValue(table, item);
+                    const { data: existing } = await supabase
+                        .from(table)
+                        .select('*')
+                        .eq(this.getPrimaryKeyColumn(table), primaryKey)
+                        .single();
+                    
+                    if (!existing) {
+                        // No existe, insertar
+                        const { error } = await supabase.from(table).insert([item]);
+                        if (error) throw error;
+                    } else {
+                        // Ya existe, actualizar
+                        const { error } = await supabase
+                            .from(table)
+                            .update(item)
+                            .eq(this.getPrimaryKeyColumn(table), primaryKey);
+                        if (error) throw error;
+                    }
+                }
                 break;
                 
             case 'update':
@@ -2620,8 +2642,41 @@ class OfflineManager {
                 if (deleteError) throw deleteError;
                 break;
         }
+    } catch (error) {
+        console.error(`Error sincronizando ${action} en ${table}:`, error);
+        throw error;
     }
+}
 
+// Agregar estos métodos helper a la clase OfflineManager:
+getPrimaryKeyColumn(table) {
+    const keyColumns = {
+        clientes: 'nit',
+        productos: 'codigo',
+        zonas: 'id',
+        parametros: 'id',
+        cotizaciones: 'id_cotizacion',
+        cotizacion_detalle: 'id',
+        entradas: 'id',
+        consecutivos: 'año'
+    };
+    return keyColumns[table] || 'id';
+}
+
+getPrimaryKeyValue(table, item) {
+    const column = this.getPrimaryKeyColumn(table);
+    return item[column];
+}
+// Agregar esta función para debugging jd
+async function verPendientesSincronizacion() {
+    const pending = await offlineManager.getPendingSync();
+    console.log('📋 Operaciones pendientes de sincronización:', pending.length);
+    pending.forEach((op, index) => {
+        console.log(`${index + 1}. ${op.action} en ${op.table}:`, op.data);
+    });
+    return pending;
+}
+	
     async syncFromServer() {
         const tables = ['parametros', 'zonas', 'clientes', 'productos'];
         
@@ -7075,32 +7130,71 @@ if (!window.jsPDF) {
             const year = d.getFullYear();
             return `${day}/${month}/${year}`;
         }
-        async function generateConsecutivo() {
+async function generateConsecutivo() {
     const year = new Date().getFullYear();
     
     try {
         if (isOnlineStatus && supabase) {
-            // Usar función PostgreSQL con el parámetro correcto
+            // Online: usar función PostgreSQL
             const { data, error } = await supabase
-                .rpc('generar_consecutivo_cotizacion', { 'año_param': year });
+                .rpc('generar_consecutivo_cotizacion', { año_param: year });
             
             if (error) {
                 console.error('Error en función PostgreSQL:', error);
-                // En lugar de retornar ERR, generar consecutivo manual
-                return await generateConsecutivoManual(year);
+                return await generateConsecutivoOffline(year);
             }
+            
+            // Guardar en localStorage para tener referencia offline
+            localStorage.setItem(`consecutivo_${year}`, data.split('-')[2]);
             return data;
         } else {
-            return await generateConsecutivoManual(year);
+            // Offline: generar desde IndexedDB
+            return await generateConsecutivoOffline(year);
         }
         
     } catch (error) {
         console.error('Error generando consecutivo:', error);
-        // En lugar de retornar ERR, generar consecutivo manual
-        return await generateConsecutivoManual(year);
+        return await generateConsecutivoOffline(year);
     }
 }
 
+// Nueva función para generar consecutivo offline
+async function generateConsecutivoOffline(year) {
+    try {
+        // Buscar en IndexedDB el último consecutivo del año
+        const cotizaciones = await getOffline('cotizaciones');
+        
+        const cotizacionesDelAño = cotizaciones.filter(c => 
+            c.consecutivo && c.consecutivo.startsWith(`COT-${year}-`)
+        );
+        
+        let maxNumero = 0;
+        
+        cotizacionesDelAño.forEach(c => {
+            const partes = c.consecutivo.split('-');
+            if (partes.length === 3) {
+                const numero = parseInt(partes[2]);
+                if (!isNaN(numero) && numero > maxNumero) {
+                    maxNumero = numero;
+                }
+            }
+        });
+        
+        const siguiente = maxNumero + 1;
+        const consecutivo = `COT-${year}-${String(siguiente).padStart(3, '0')}`;
+        
+        // Guardar en localStorage como respaldo
+        localStorage.setItem(`consecutivo_${year}`, String(siguiente));
+        
+        return consecutivo;
+        
+    } catch (error) {
+        console.error('Error generando consecutivo offline:', error);
+        // Último recurso: usar timestamp
+        const timestamp = Date.now().toString().slice(-6);
+        return `COT-${year}-T${timestamp}`;
+    }
+}
 // Función auxiliar para generar consecutivo manualmente
 async function generateConsecutivoManual(year) {
     try {
@@ -7551,6 +7645,7 @@ if ('serviceWorker' in navigator) {
     </script>
 </body>
 </html>
+
 
 
 
