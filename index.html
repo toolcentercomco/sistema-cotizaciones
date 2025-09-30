@@ -2973,7 +2973,7 @@ class ConflictResolver {
                             <button class="btn-close" onclick="closeClienteModal()">&times;</button>
                         </div>
                         
-                        <form id="formCliente" onsubmit="saveCliente(event)">
+                        <form id="formCliente" onsubmit="(event)">
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="clienteNit">NIT <span class="required">*</span></label>
@@ -3083,46 +3083,80 @@ class ConflictResolver {
             };
             
             window.saveCliente = async function(event) {
-                event.preventDefault();
-                
-                const formData = getFormData();
-                const isEdit = currentClienteEdit !== null;
-                
-                // Validaciones
-                const validation = await validateCliente(formData, isEdit);
-                if (!validation.valid) {
-                    showNotification(validation.message, 'error');
-                    return;
-                }
-                
-                showLoadingButton(true);
-                
-                try {
-                    if (isEdit) {
-                        await updateCliente(formData);
-                        showNotification('Cliente actualizado correctamente', 'success');
-                    } else {
-                        await createCliente(formData);
-                        showNotification('Cliente creado correctamente', 'success');
-                    }
-                    
-                    await registerAction(
-                        isEdit ? 'Actualizar cliente' : 'Crear cliente',
-                        'clientes',
-                        formData.nit,
-                        `Cliente: ${formData.nombre}`
+    event.preventDefault();
+    
+    const formData = getFormData();
+    const isEdit = currentClienteEdit !== null;
+    
+    // Validaciones
+    const validation = await validateCliente(formData, isEdit);
+    if (!validation.valid) {
+        showNotification(validation.message, 'error');
+        return;
+    }
+    
+    showLoadingButton(true);
+    
+    try {
+        if (isEdit) {
+            await updateCliente(formData);
+            showNotification('Cliente actualizado correctamente', 'success');
+        } else {
+            await createCliente(formData);
+            showNotification('Cliente creado correctamente', 'success');
+        }
+        
+        await registerAction(
+            isEdit ? 'Actualizar cliente' : 'Crear cliente',
+            'clientes',
+            formData.nit,
+            `Cliente: ${formData.nombre}`
+        );
+        
+        closeClienteModal();
+        
+        // ESTA ES LA PARTE CRÍTICA: Recargar SIEMPRE desde IndexedDB
+        await loadClientesFromLocal(); // ← Nueva función
+        
+    } catch (error) {
+        console.error('Error guardando cliente:', error);
+        showNotification('Error al guardar cliente: ' + error.message, 'error');
+    } finally {
+        showLoadingButton(false);
+    }
+	// jd2
+	async function loadClientesFromLocal() {
+    try {
+        // SIEMPRE cargar desde IndexedDB primero
+        let clientes = await getOffline('clientes');
+        
+        // Si está online, también sincronizar con servidor
+        if (isOnlineStatus && supabase) {
+            try {
+                const result = await executeQuery('clientes', 'select', {});
+                if (result.data) {
+                    // Fusionar: mantener los creados offline, actualizar los demás
+                    const offlineClientes = clientes.filter(c => c._offline_created);
+                    const serverClientes = result.data.filter(c => 
+                        !offlineClientes.find(oc => oc.nit === c.nit)
                     );
-                    
-                    closeClienteModal();
-                    await loadClientes();
-                    
-                } catch (error) {
-                    console.error('Error guardando cliente:', error);
-                    showNotification('Error al guardar cliente: ' + error.message, 'error');
-                } finally {
-                    showLoadingButton(false);
+                    clientes = [...offlineClientes, ...serverClientes];
                 }
-            };
+            } catch (error) {
+                console.log('Usando solo datos locales');
+            }
+        }
+        
+        clientesList = clientes.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        filteredClientes = [...clientesList];
+        renderClientes();
+        
+    } catch (error) {
+        console.error('Error cargando clientes:', error);
+        showNotification('Error al cargar clientes', 'error');
+    }
+}			
+};
             
             window.editCliente = function(nit) {
                 const cliente = clientesList.find(c => c.nit === nit);
@@ -3239,27 +3273,9 @@ class ConflictResolver {
                     where: { column: 'nit', value: data.nit }
                 });
             }
-            
             async function loadClientes() {
-                try {
-                    let clientes = [];
-                    
-                    if (isOnline() && supabase) {
-                        const result = await executeQuery('clientes', 'select', {});
-                        clientes = result.data || [];
-                    } else {
-                        clientes = await getOffline('clientes');
-                    }
-                    
-                    clientesList = clientes.sort((a, b) => a.nombre.localeCompare(b.nombre));
-                    filteredClientes = [...clientesList];
-                    renderClientes();
-                    
-                } catch (error) {
-                    console.error('Error cargando clientes:', error);
-                    showNotification('Error al cargar clientes', 'error');
-                }
-            }
+           await loadClientesFromLocal();
+             }
             
             async function loadZonas() {
                 try {
@@ -3650,48 +3666,78 @@ class ConflictResolver {
                 
                 renderProductos();
             };
-            
             window.saveProducto = async function(event) {
-                event.preventDefault();
-                
-                const formData = getProductoFormData();
-                const isEdit = currentProductoEdit !== null;
-                
-                // Validaciones
-                const validation = await validateProducto(formData, isEdit);
-                if (!validation.valid) {
-                    showNotification(validation.message, 'error');
-                    return;
-                }
-                
-                showProductoLoading(true);
-                
-                try {
-                    if (isEdit) {
-                        await updateProducto(formData);
-                        showNotification('Producto actualizado correctamente', 'success');
-                    } else {
-                        await createProducto(formData);
-                        showNotification('Producto creado correctamente', 'success');
-                    }
-                    
-                    await registerAction(
-                        isEdit ? 'Actualizar producto' : 'Crear producto',
-                        'productos',
-                        formData.codigo,
-                        `Producto: ${formData.nombre}`
+    event.preventDefault();
+    
+    const formData = getProductoFormData();
+    const isEdit = currentProductoEdit !== null;
+    
+    const validation = await validateProducto(formData, isEdit);
+    if (!validation.valid) {
+        showNotification(validation.message, 'error');
+        return;
+    }
+    
+    showProductoLoading(true);
+    
+    try {
+        if (isEdit) {
+            await updateProducto(formData);
+            showNotification('Producto actualizado correctamente', 'success');
+        } else {
+            await createProducto(formData);
+            showNotification('Producto creado correctamente', 'success');
+        }
+        
+        await registerAction(
+            isEdit ? 'Actualizar producto' : 'Crear producto',
+            'productos',
+            formData.codigo,
+            `Producto: ${formData.nombre}`
+        );
+        
+        closeProductoModal();
+        await loadProductosFromLocal(); // ← Cargar desde local
+        
+    } catch (error) {
+        console.error('Error guardando producto:', error);
+        showNotification('Error al guardar producto: ' + error.message, 'error');
+    } finally {
+        showProductoLoading(false);
+    }
+};
+
+// Agregar función de carga local
+async function loadProductosFromLocal() {
+    try {
+        let productos = await getOffline('productos');
+        
+        if (isOnlineStatus && supabase) {
+            try {
+                const result = await executeQuery('productos', 'select', {});
+                if (result.data) {
+                    const offlineProductos = productos.filter(p => p._offline_created);
+                    const serverProductos = result.data.filter(p => 
+                        !offlineProductos.find(op => op.codigo === p.codigo)
                     );
-                    
-                    closeProductoModal();
-                    await loadProductos();
-                    
-                } catch (error) {
-                    console.error('Error guardando producto:', error);
-                    showNotification('Error al guardar producto: ' + error.message, 'error');
-                } finally {
-                    showProductoLoading(false);
+                    productos = [...offlineProductos, ...serverProductos];
                 }
-            };
+            } catch (error) {
+                console.log('Usando solo datos locales');
+            }
+        }
+        
+        productosList = productos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        filteredProductos = [...productosList];
+        
+        renderProductos();
+        updateStats();
+        
+    } catch (error) {
+        console.error('Error cargando productos:', error);
+        showNotification('Error al cargar productos', 'error');
+    }
+}
             
             window.editProducto = function(codigo) {
                 const producto = productosList.find(p => p.codigo === codigo);
@@ -5261,7 +5307,8 @@ if (!window.jsPDF) {
                     );
                     
                     closeCotizacionModal();
-                    await loadCotizaciones();
+                    // await loadCotizaciones();
+					await loadCotizacionesFromLocal();
                     
                 } catch (error) {
                     console.error('Error guardando cotización:', error);
@@ -7713,12 +7760,3 @@ if ('serviceWorker' in navigator) {
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
