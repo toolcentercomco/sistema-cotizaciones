@@ -5503,7 +5503,8 @@ if (!window.jsPDF) {
                         `Venta confirmada - Stock actualizado`
                     );
                     
-                    await loadCotizaciones();
+                  //  await loadCotizaciones();
+				 await loadCotizacionesFromLocal();	
                     
                 } catch (error) {
                     console.error('Error confirmando venta:', error);
@@ -5541,7 +5542,8 @@ if (!window.jsPDF) {
                         `Motivo: ${motivo}`
                     );
                     
-                    await loadCotizaciones();
+                    // await loadCotizaciones();
+					await loadCotizacionesFromLocal();
                     
                 } catch (error) {
                     console.error('Error anulando cotización:', error);
@@ -6036,7 +6038,8 @@ if (!window.jsPDF) {
             await loadParametros();
             await loadClientes();
             await loadProductos();
-            await loadCotizaciones();
+            // await loadCotizaciones();
+			await loadCotizacionesFromLocal();
             
             registerAction('Acceso módulo cotizaciones', 'sistema', 'cotizaciones', 'Usuario accedió al módulo de cotizaciones');
         }
@@ -7760,3 +7763,4 @@ if ('serviceWorker' in navigator) {
     </script>
 </body>
 </html>
+
