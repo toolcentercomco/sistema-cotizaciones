@@ -2317,20 +2317,16 @@
         </div>
 
         <!-- STATUS BAR -->
-<div class="status-bar">
-    <div class="status-indicator">
-        <div class="status-dot" id="connectionDot"></div>
-        <span id="connectionStatus">En línea</span>
-    </div>
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <span id="lastSync">Última sincronización: --:--</span>
-        <button onclick="forzarSincronizacion()" 
-                id="btnSincronizar"
-                style="background: #10b981; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-            Sincronizar ahora
-        </button>
-    </div>
-</div>
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="connectionDot"></div>
+                <span id="connectionStatus">En línea</span>
+            </div>
+            <div>
+                <span id="lastSync">🔄 Última sincronización: --:--</span>
+            </div>
+        </div>
+
         <!-- MENU GRID -->
 <div id="menuScreen">
     <div class="menu-grid">
@@ -2404,7 +2400,7 @@
             try {
                 if (typeof window.supabase !== 'undefined') {
                     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                  console.log('✅ Supabase inicializado correctamente');
+                  console.log('�?Supabase inicializado correctamente');
                     return true;
                 } else {
                     console.warn('⚠️ Supabase no disponible, modo offline');
@@ -2420,401 +2416,38 @@
         let currentUser = null;
         let isOnlineStatus = navigator.onLine;
         let db = null; // IndexedDB instance
-		// CLASES COMPLETAS PARA EL SISTEMA OFFLINE
-class OfflineManager {
-    constructor() {
-        this.syncInProgress = false;
-        this.pendingOperations = [];
-        this.conflictResolver = new ConflictResolver();
-    }
-
-// jd
-     
-    async executeOffline(table, action, data, options = {}) {
-        const operation = {
-            id: Date.now() + Math.random(),
-            table,
-            action,
-            data,
-            timestamp: new Date().toISOString(),
-            synced: false,
-            retries: 0,
-            maxRetries: 3,
-            ...options
-        };
-
-        try {
-            const result = await this.executeLocalOperation(operation);
-            await this.savePendingSync(operation);
-            
-            if (isOnlineStatus) {
-                setTimeout(() => this.performSync(), 500);
-            }
-            
-            return { success: true, offline: true, operationId: operation.id, data: result };
-        } catch (error) {
-            console.error('Error en operación offline:', error);
-            throw error;
-        }
-    }
-
-    async executeLocalOperation(operation) {
-        const { table, action, data } = operation;
         
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction([table], 'readwrite');
-            const store = transaction.objectStore(table);
-            
-            switch (action) {
-                case 'insert':
-                    this.handleInsert(store, data, resolve, reject);
-                    break;
-                case 'update':
-                    this.handleUpdate(store, data, resolve, reject);
-                    break;
-                case 'delete':
-                    this.handleDelete(store, data, resolve, reject);
-                    break;
-                case 'select':
-                    this.handleSelect(store, data, resolve, reject);
-                    break;
-                default:
-                    reject(new Error(`Acción no soportada: ${action}`));
-            }
-        });
-    }
-
-    handleInsert(store, data, resolve, reject) {
-        if (Array.isArray(data)) {
-            const promises = data.map(item => {
-                const itemWithMeta = {
-                    ...item,
-                    _offline_created: true,
-                    _offline_timestamp: new Date().toISOString()
-                };
-                return new Promise((res, rej) => {
-                    const req = store.add(itemWithMeta);
-                    req.onsuccess = () => res(req.result);
-                    req.onerror = () => rej(req.error);
-                });
-            });
-            Promise.all(promises).then(resolve).catch(reject);
-        } else {
-            const dataWithMeta = {
-                ...data,
-                _offline_created: true,
-                _offline_timestamp: new Date().toISOString()
-            };
-            const request = store.add(dataWithMeta);
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        }
-    }
-
-    handleUpdate(store, data, resolve, reject) {
-        const { updates, where } = data;
-        const getRequest = store.get(where.value);
-        
-        getRequest.onsuccess = () => {
-            const existing = getRequest.result;
-            if (existing) {
-                const updated = {
-                    ...existing,
-                    ...updates,
-                    _offline_modified: true,
-                    _offline_timestamp: new Date().toISOString()
-                };
-                const putRequest = store.put(updated);
-                putRequest.onsuccess = () => resolve(putRequest.result);
-                putRequest.onerror = () => reject(putRequest.error);
-            } else {
-                reject(new Error('Registro no encontrado'));
-            }
-        };
-        getRequest.onerror = () => reject(getRequest.error);
-    }
-
-    handleDelete(store, data, resolve, reject) {
-        const request = store.delete(data.value);
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    }
-
-    handleSelect(store, data, resolve, reject) {
-        const request = store.getAll();
-        request.onsuccess = () => resolve(request.result || []);
-        request.onerror = () => reject(request.error);
-    }
-
-    async savePendingSync(operation) {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['sync_pending'], 'readwrite');
-            const store = transaction.objectStore('sync_pending');
-            const request = store.add(operation);
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    async performSync() {
-        if (this.syncInProgress || !isOnlineStatus || !supabase) return;
-
-        this.syncInProgress = true;
-        console.log('🔄 Iniciando sincronización...');
-
-        try {
-            await this.syncPendingOperations();
-            await this.syncFromServer();
-            showNotification('Sincronización completada', 'success');
-            updateLastSync();
-            updateConnectionStatus();
-        } catch (error) {
-            console.error('Error en sincronización:', error);
-            showNotification('Error en sincronización', 'error');
-        } finally {
-            this.syncInProgress = false;
-        }
-    }
-
-    async syncPendingOperations() {
-        const pendingOps = await this.getPendingSync();
-        let syncCount = 0;
-
-        for (const operation of pendingOps) {
-            try {
-                await this.syncSingleOperation(operation);
-                await this.markAsSynced(operation.id);
-                syncCount++;
-            } catch (error) {
-                console.error('Error sincronizando:', error);
-            }
-        }
-        
-        if (syncCount > 0) {
-            console.log(`✅ Sincronizadas ${syncCount} operaciones`);
-        }
-    }
-
-    async syncSingleOperation(operation) {
-    const { table, action, data } = operation;
-    const cleanData = this.cleanOfflineMetadata(data);
-    
-    try {
-        switch (action) {
-            case 'insert':
-                // Para insert, verificar si ya existe en el servidor
-                const dataArray = Array.isArray(cleanData) ? cleanData : [cleanData];
-                
-                for (const item of dataArray) {
-                    // Verificar existencia según la tabla
-                    const primaryKey = this.getPrimaryKeyValue(table, item);
-                    const { data: existing } = await supabase
-                        .from(table)
-                        .select('*')
-                        .eq(this.getPrimaryKeyColumn(table), primaryKey)
-                        .single();
-                    
-                    if (!existing) {
-                        // No existe, insertar
-                        const { error } = await supabase.from(table).insert([item]);
-                        if (error) throw error;
-                    } else {
-                        // Ya existe, actualizar
-                        const { error } = await supabase
-                            .from(table)
-                            .update(item)
-                            .eq(this.getPrimaryKeyColumn(table), primaryKey);
-                        if (error) throw error;
-                    }
-                }
-                break;
-                
-            case 'update':
-                const { updates, where } = cleanData;
-                const { error: updateError } = await supabase
-                    .from(table)
-                    .update(updates)
-                    .eq(where.column, where.value);
-                if (updateError) throw updateError;
-                break;
-                
-            case 'delete':
-                const { error: deleteError } = await supabase
-                    .from(table)
-                    .delete()
-                    .eq(cleanData.column, cleanData.value);
-                if (deleteError) throw deleteError;
-                break;
-        }
-    } catch (error) {
-        console.error(`Error sincronizando ${action} en ${table}:`, error);
-        throw error;
-    }
-}
-
-// Agregar estos métodos helper a la clase OfflineManager:
-getPrimaryKeyColumn(table) {
-    const keyColumns = {
-        clientes: 'nit',
-        productos: 'codigo',
-        zonas: 'id',
-        parametros: 'id',
-        cotizaciones: 'id_cotizacion',
-        cotizacion_detalle: 'id',
-        entradas: 'id',
-        consecutivos: 'año'
-    };
-    return keyColumns[table] || 'id';
-}
-
-getPrimaryKeyValue(table, item) {
-    const column = this.getPrimaryKeyColumn(table);
-    return item[column];
-}
-// Agregar esta función para debugging jd
-// Forzar sincronización manual
-async function forzarSincronizacion() {
-    const btn = document.getElementById('btnSincronizar');
-    
-    if (!isOnlineStatus) {
-        showNotification('No hay conexión a internet', 'warning');
-        return;
-    }
-    
-    if (!supabase) {
-        showNotification('Supabase no está inicializado', 'error');
-        return;
-    }
-    
-    // Cambiar texto del botón
-    btn.textContent = 'Sincronizando...';
-    btn.disabled = true;
-    
-    try {
-        await offlineManager.performSync();
-        showNotification('Sincronización completada exitosamente', 'success');
-    } catch (error) {
-        console.error('Error en sincronización:', error);
-        showNotification('Error al sincronizar: ' + error.message, 'error');
-    } finally {
-        btn.textContent = 'Sincronizar ahora';
-        btn.disabled = false;
-    }
-}
-
-// Ver pendientes de sincronización (para debugging)
-async function verPendientesSincronizacion() {
-    const pending = await offlineManager.getPendingSync();
-    console.log('Operaciones pendientes de sincronización:', pending.length);
-    pending.forEach((op, index) => {
-        console.log(`${index + 1}. ${op.action} en ${op.table}:`, op.data);
-    });
-    return pending;
-}
-	
-async function verPendientesSincronizacion() {
-    const pending = await offlineManager.getPendingSync();
-    console.log('📋 Operaciones pendientes de sincronización:', pending.length);
-    pending.forEach((op, index) => {
-        console.log(`${index + 1}. ${op.action} en ${op.table}:`, op.data);
-    });
-    return pending;
-}
-	
-    async syncFromServer() {
-        const tables = ['parametros', 'zonas', 'clientes', 'productos'];
-        
-        for (const table of tables) {
-            try {
-                const { data, error } = await supabase.from(table).select('*');
-                if (error) throw error;
-                if (data) await cacheDataLocally(table, data);
-            } catch (error) {
-                console.error(`Error descargando ${table}:`, error);
-            }
-        }
-    }
-
-    getPendingSync() {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['sync_pending'], 'readonly');
-            const store = transaction.objectStore('sync_pending');
-            const request = store.getAll();
-            request.onsuccess = () => resolve(request.result || []);
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    markAsSynced(operationId) {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['sync_pending'], 'readwrite');
-            const store = transaction.objectStore('sync_pending');
-            const request = store.delete(operationId);
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    cleanOfflineMetadata(data) {
-        if (Array.isArray(data)) {
-            return data.map(item => this.cleanSingleItem(item));
-        }
-        return this.cleanSingleItem(data);
-    }
-
-    cleanSingleItem(item) {
-        if (!item || typeof item !== 'object') return item;
-        const cleaned = { ...item };
-        delete cleaned._offline_created;
-        delete cleaned._offline_modified;
-        delete cleaned._offline_timestamp;
-        return cleaned;
-    }
-}
-   
-		
-class ConflictResolver {
-    async resolve(table, localData, serverData) {
-        if (localData._offline_created) {
-            return localData;
-        }
-        return serverData;
-    }
-}
-
-		// aqui
-	const offlineManager = new OfflineManager(); 
-    let syncIndicator = null;
-	
-        
-		
         // ============================================
         // INICIALIZACI脫N
         // ============================================
         
         document.addEventListener('DOMContentLoaded', async function() {
-    console.log('🚀 Iniciando Sistema de Cotizaciones v1.0');
-    
-    // Inicializar Supabase
-    const supabaseReady = initSupabase();
-    
-    // Inicializar sistema offline COMPLETO (en lugar de solo initIndexedDB)
-    await initOfflineSystem();
-    
-    // Configurar formulario de login
-    setupLoginForm();
-    
-    // Verificar sesión existente
-    checkExistingSession();
-    
-    updateConnectionStatus();
-    
-    if (supabaseReady) {
-        showNotification('Sistema listo - Conectado con sincronización automática', 'success');
-    } else {
-        showNotification('Sistema listo - Modo offline con sincronización pendiente', 'warning');
-    }
-});
+            console.log('馃殌 Iniciando Sistema de Cotizaciones v1.0');
+            
+            // Inicializar Supabase
+            const supabaseReady = initSupabase();
+            
+            // Inicializar base de datos local
+            await initIndexedDB();
+            
+            // Configurar eventos de conectividad
+            setupConnectivityEvents();
+            
+            // Configurar formulario de login
+            setupLoginForm();
+            
+            // Verificar sesión existente
+            checkExistingSession();
+            
+            updateConnectionStatus();
+            
+            if (supabaseReady) {
+                showNotification('Sistema listo - Conectado a Supabase', 'success');
+            } else {
+                showNotification('Sistema listo - Solo modo offline', 'warning');
+            }
+        });
+
         // ============================================
         // FUNCIONES DE AUTENTICACI脫N
         // ============================================
@@ -2973,7 +2606,7 @@ class ConflictResolver {
                             <button class="btn-close" onclick="closeClienteModal()">&times;</button>
                         </div>
                         
-                        <form id="formCliente" onsubmit="(event)">
+                        <form id="formCliente" onsubmit="saveCliente(event)">
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="clienteNit">NIT <span class="required">*</span></label>
@@ -3083,80 +2716,46 @@ class ConflictResolver {
             };
             
             window.saveCliente = async function(event) {
-    event.preventDefault();
-    
-    const formData = getFormData();
-    const isEdit = currentClienteEdit !== null;
-    
-    // Validaciones
-    const validation = await validateCliente(formData, isEdit);
-    if (!validation.valid) {
-        showNotification(validation.message, 'error');
-        return;
-    }
-    
-    showLoadingButton(true);
-    
-    try {
-        if (isEdit) {
-            await updateCliente(formData);
-            showNotification('Cliente actualizado correctamente', 'success');
-        } else {
-            await createCliente(formData);
-            showNotification('Cliente creado correctamente', 'success');
-        }
-        
-        await registerAction(
-            isEdit ? 'Actualizar cliente' : 'Crear cliente',
-            'clientes',
-            formData.nit,
-            `Cliente: ${formData.nombre}`
-        );
-        
-        closeClienteModal();
-        
-        // ESTA ES LA PARTE CRÍTICA: Recargar SIEMPRE desde IndexedDB
-        await loadClientesFromLocal(); // ← Nueva función
-        
-    } catch (error) {
-        console.error('Error guardando cliente:', error);
-        showNotification('Error al guardar cliente: ' + error.message, 'error');
-    } finally {
-        showLoadingButton(false);
-    }
-	// jd2
-	async function loadClientesFromLocal() {
-    try {
-        // SIEMPRE cargar desde IndexedDB primero
-        let clientes = await getOffline('clientes');
-        
-        // Si está online, también sincronizar con servidor
-        if (isOnlineStatus && supabase) {
-            try {
-                const result = await executeQuery('clientes', 'select', {});
-                if (result.data) {
-                    // Fusionar: mantener los creados offline, actualizar los demás
-                    const offlineClientes = clientes.filter(c => c._offline_created);
-                    const serverClientes = result.data.filter(c => 
-                        !offlineClientes.find(oc => oc.nit === c.nit)
-                    );
-                    clientes = [...offlineClientes, ...serverClientes];
+                event.preventDefault();
+                
+                const formData = getFormData();
+                const isEdit = currentClienteEdit !== null;
+                
+                // Validaciones
+                const validation = await validateCliente(formData, isEdit);
+                if (!validation.valid) {
+                    showNotification(validation.message, 'error');
+                    return;
                 }
-            } catch (error) {
-                console.log('Usando solo datos locales');
-            }
-        }
-        
-        clientesList = clientes.sort((a, b) => a.nombre.localeCompare(b.nombre));
-        filteredClientes = [...clientesList];
-        renderClientes();
-        
-    } catch (error) {
-        console.error('Error cargando clientes:', error);
-        showNotification('Error al cargar clientes', 'error');
-    }
-}			
-};
+                
+                showLoadingButton(true);
+                
+                try {
+                    if (isEdit) {
+                        await updateCliente(formData);
+                        showNotification('Cliente actualizado correctamente', 'success');
+                    } else {
+                        await createCliente(formData);
+                        showNotification('Cliente creado correctamente', 'success');
+                    }
+                    
+                    await registerAction(
+                        isEdit ? 'Actualizar cliente' : 'Crear cliente',
+                        'clientes',
+                        formData.nit,
+                        `Cliente: ${formData.nombre}`
+                    );
+                    
+                    closeClienteModal();
+                    await loadClientes();
+                    
+                } catch (error) {
+                    console.error('Error guardando cliente:', error);
+                    showNotification('Error al guardar cliente: ' + error.message, 'error');
+                } finally {
+                    showLoadingButton(false);
+                }
+            };
             
             window.editCliente = function(nit) {
                 const cliente = clientesList.find(c => c.nit === nit);
@@ -3273,9 +2872,27 @@ class ConflictResolver {
                     where: { column: 'nit', value: data.nit }
                 });
             }
+            
             async function loadClientes() {
-           await loadClientesFromLocal();
-             }
+                try {
+                    let clientes = [];
+                    
+                    if (isOnline() && supabase) {
+                        const result = await executeQuery('clientes', 'select', {});
+                        clientes = result.data || [];
+                    } else {
+                        clientes = await getOffline('clientes');
+                    }
+                    
+                    clientesList = clientes.sort((a, b) => a.nombre.localeCompare(b.nombre));
+                    filteredClientes = [...clientesList];
+                    renderClientes();
+                    
+                } catch (error) {
+                    console.error('Error cargando clientes:', error);
+                    showNotification('Error al cargar clientes', 'error');
+                }
+            }
             
             async function loadZonas() {
                 try {
@@ -3369,7 +2986,7 @@ class ConflictResolver {
         ✏️ Editar
     </button>
     <button class="btn-action btn-eliminar" onclick="deleteCliente('${cliente.nit}')">
-        🗑️ Eliminar
+        🗑�?Eliminar
     </button>
 </div>
 </div>
@@ -3459,7 +3076,7 @@ class ConflictResolver {
                         </div>
                         
                         <div class="filter-group">
-                            <label>🏷️ Estado:</label>
+                            <label>🏷�?Estado:</label>
                             <select id="filterEstado" class="filter-select" onchange="filterProductos()">
                                 <option value="">Todos</option>
                                 <option value="activo">Activos</option>
@@ -3488,7 +3105,7 @@ class ConflictResolver {
                         <form id="formProducto" onsubmit="saveProducto(event)">
                             <!-- Sección de imagen -->
                             <div class="image-upload-section">
-                                <label>🖼️ Foto del Producto</label>
+                                <label>🖼�?Foto del Producto</label>
                                 <div class="image-upload" id="imageUploadArea" 
                                      onclick="triggerFileInput()"
                                      ondrop="handleDrop(event)" 
@@ -3634,7 +3251,7 @@ class ConflictResolver {
                     alert.innerHTML = '⚠️ Stock por debajo del mínimo - Alerta de STOCK BAJO';
                 } else {
                     alert.className = 'stock-alert alert-info';
-                    alert.innerHTML = '✅ Stock normal - El producto se mostrará disponible';
+                    alert.innerHTML = '�?Stock normal - El producto se mostrará disponible';
                 }
             };
             
@@ -3666,78 +3283,48 @@ class ConflictResolver {
                 
                 renderProductos();
             };
+            
             window.saveProducto = async function(event) {
-    event.preventDefault();
-    
-    const formData = getProductoFormData();
-    const isEdit = currentProductoEdit !== null;
-    
-    const validation = await validateProducto(formData, isEdit);
-    if (!validation.valid) {
-        showNotification(validation.message, 'error');
-        return;
-    }
-    
-    showProductoLoading(true);
-    
-    try {
-        if (isEdit) {
-            await updateProducto(formData);
-            showNotification('Producto actualizado correctamente', 'success');
-        } else {
-            await createProducto(formData);
-            showNotification('Producto creado correctamente', 'success');
-        }
-        
-        await registerAction(
-            isEdit ? 'Actualizar producto' : 'Crear producto',
-            'productos',
-            formData.codigo,
-            `Producto: ${formData.nombre}`
-        );
-        
-        closeProductoModal();
-        await loadProductosFromLocal(); // ← Cargar desde local
-        
-    } catch (error) {
-        console.error('Error guardando producto:', error);
-        showNotification('Error al guardar producto: ' + error.message, 'error');
-    } finally {
-        showProductoLoading(false);
-    }
-};
-
-// Agregar función de carga local
-async function loadProductosFromLocal() {
-    try {
-        let productos = await getOffline('productos');
-        
-        if (isOnlineStatus && supabase) {
-            try {
-                const result = await executeQuery('productos', 'select', {});
-                if (result.data) {
-                    const offlineProductos = productos.filter(p => p._offline_created);
-                    const serverProductos = result.data.filter(p => 
-                        !offlineProductos.find(op => op.codigo === p.codigo)
-                    );
-                    productos = [...offlineProductos, ...serverProductos];
+                event.preventDefault();
+                
+                const formData = getProductoFormData();
+                const isEdit = currentProductoEdit !== null;
+                
+                // Validaciones
+                const validation = await validateProducto(formData, isEdit);
+                if (!validation.valid) {
+                    showNotification(validation.message, 'error');
+                    return;
                 }
-            } catch (error) {
-                console.log('Usando solo datos locales');
-            }
-        }
-        
-        productosList = productos.sort((a, b) => a.nombre.localeCompare(b.nombre));
-        filteredProductos = [...productosList];
-        
-        renderProductos();
-        updateStats();
-        
-    } catch (error) {
-        console.error('Error cargando productos:', error);
-        showNotification('Error al cargar productos', 'error');
-    }
-}
+                
+                showProductoLoading(true);
+                
+                try {
+                    if (isEdit) {
+                        await updateProducto(formData);
+                        showNotification('Producto actualizado correctamente', 'success');
+                    } else {
+                        await createProducto(formData);
+                        showNotification('Producto creado correctamente', 'success');
+                    }
+                    
+                    await registerAction(
+                        isEdit ? 'Actualizar producto' : 'Crear producto',
+                        'productos',
+                        formData.codigo,
+                        `Producto: ${formData.nombre}`
+                    );
+                    
+                    closeProductoModal();
+                    await loadProductos();
+                    
+                } catch (error) {
+                    console.error('Error guardando producto:', error);
+                    showNotification('Error al guardar producto: ' + error.message, 'error');
+                } finally {
+                    showProductoLoading(false);
+                }
+            };
             
             window.editProducto = function(codigo) {
                 const producto = productosList.find(p => p.codigo === codigo);
@@ -3927,9 +3514,9 @@ async function loadProductosFromLocal() {
                container.innerHTML = filteredProductos.map(producto => {
     const stockStatus = getStockStatus(producto);
     const stockIcon = {
-        normal: '✅',
+        normal: '�?,
         bajo: '⚠️',
-        agotado: '❌'
+        agotado: '�?
     }[stockStatus];
                     
                     return `
@@ -3955,7 +3542,7 @@ async function loadProductosFromLocal() {
                                 </div>
                                 
                                 <div class="producto-fecha">
-                                    🏷️ ${formatDate(producto.fecha_hora_creacion)}
+                                    🏷�?${formatDate(producto.fecha_hora_creacion)}
                                 </div>
                                 
                                 <div class="producto-actions">
@@ -4102,7 +3689,7 @@ async function loadProductosFromLocal() {
                         </div>
                         
                         <div class="filter-group">
-                            <label>🏷️ Período:</label>
+                            <label>🏷�?Período:</label>
                             <select id="filterPeriodo" class="filter-select" onchange="filterEntradas()">
                                 <option value="">Todo el tiempo</option>
                                 <option value="hoy">Hoy</option>
@@ -4117,7 +3704,7 @@ async function loadProductosFromLocal() {
                         <table class="entradas-table" id="entradasTable">
                             <thead>
                                 <tr>
-                                    <th>🏷️ Fecha</th>
+                                    <th>🏷�?Fecha</th>
                                     <th>📦 Producto</th>
                                     <th>📥 Motivo</th>
                                     <th>📦 Cantidad</th>
@@ -4864,7 +4451,7 @@ async function loadProductosFromLocal() {
                         </div>
                         
                         <div class="filter-group">
-                            <label>🏷️ Período:</label>
+                            <label>🏷�?Período:</label>
                             <select id="filterPeriodo" class="filter-select" onchange="filterCotizaciones()">
                                 <option value="">Todo el tiempo</option>
                                 <option value="hoy">Hoy</option>
@@ -5307,8 +4894,7 @@ if (!window.jsPDF) {
                     );
                     
                     closeCotizacionModal();
-                    // await loadCotizaciones();
-					await loadCotizacionesFromLocal();
+                    await loadCotizaciones();
                     
                 } catch (error) {
                     console.error('Error guardando cotización:', error);
@@ -5503,8 +5089,7 @@ if (!window.jsPDF) {
                         `Venta confirmada - Stock actualizado`
                     );
                     
-                  //  await loadCotizaciones();
-				 await loadCotizacionesFromLocal();	
+                    await loadCotizaciones();
                     
                 } catch (error) {
                     console.error('Error confirmando venta:', error);
@@ -5542,8 +5127,7 @@ if (!window.jsPDF) {
                         `Motivo: ${motivo}`
                     );
                     
-                    // await loadCotizaciones();
-					await loadCotizacionesFromLocal();
+                    await loadCotizaciones();
                     
                 } catch (error) {
                     console.error('Error anulando cotización:', error);
@@ -5679,7 +5263,7 @@ if (!window.jsPDF) {
                         </div>
                         <div class="cantidad-controls">
                             <button class="btn-cantidad" onclick="updateCantidadProducto('${producto.codigo}', ${producto.cantidad - 1})">
-                                鈭?
+                                �?
                             </button>
                             <input type="number" class="cantidad-input" value="${producto.cantidad}" min="1" 
                                    onchange="updateCantidadProducto('${producto.codigo}', parseInt(this.value))">
@@ -5692,7 +5276,7 @@ if (!window.jsPDF) {
                                 ${formatCurrency(producto.subtotal)}
                             </div>
                             <button class="btn-eliminar-producto" onclick="removeProductoFromCotizacion('${producto.codigo}')">
-                                🗑️
+                                🗑�?
                             </button>
                         </div>
                     </div>
@@ -5894,7 +5478,7 @@ if (!window.jsPDF) {
                         </div>
                         <div class="cotizacion-info">
                             <div class="cotizacion-cliente">${cotizacion.nombre_cliente}</div>
-                            <div class="cotizacion-fecha">🏷️ ${formatDate(cotizacion.fecha_hora)}</div>
+                            <div class="cotizacion-fecha">🏷�?${formatDate(cotizacion.fecha_hora)}</div>
                             
                             <div class="cotizacion-resumen">
                                 <div class="resumen-total">
@@ -5922,28 +5506,28 @@ if (!window.jsPDF) {
                     case 'Pendiente':
                         return baseActions + `
                             <button class="btn-cotizacion btn-cotizacion-confirmar" onclick="confirmarVenta('${cotizacion.consecutivo}')">
-                                ✅ Confirmar Venta
+                                �?Confirmar Venta
                             </button>
                             <button class="btn-cotizacion btn-cotizacion-anular" onclick="anularCotizacion('${cotizacion.consecutivo}')">
-                                 ❌ Anular
+                                 �?Anular
                             </button>
                         `;
                     case 'Enviada':
                         return baseActions + `
                             <button class="btn-cotizacion btn-cotizacion-confirmar" onclick="confirmarVenta('${cotizacion.consecutivo}')">
-                                ✅ Confirmar Venta
+                                �?Confirmar Venta
                             </button>
                         `;
                     case 'Vendida':
                         return baseActions + `
                             <div style="color: #059669; font-size: 12px; text-align: center; padding: 8px;">
-                                ✅ Venta confirmada
+                                �?Venta confirmada
                             </div>
                         `;
                     case 'Anulada':
                         return baseActions + `
                             <div style="color: #dc2626; font-size: 12px; text-align: center; padding: 8px;">
-                                ❌ Cotización anulada
+                                �?Cotización anulada
                             </div>
                         `;
                     default:
@@ -5959,7 +5543,7 @@ if (!window.jsPDF) {
                 
                 document.getElementById('cotizacionesStats').innerHTML = `
                     <div class="stat-card-cotizaciones pendiente">
-                        <div class="stat-icon">⏳</div>
+                        <div class="stat-icon">�?/div>
                         <div class="stat-value">${pendientes}</div>
                         <div class="stat-description">Pendientes</div>
                     </div>
@@ -5969,12 +5553,12 @@ if (!window.jsPDF) {
                         <div class="stat-description">Enviadas</div>
                     </div>
                     <div class="stat-card-cotizaciones vendida">
-                        <div class="stat-icon">✅</div>
+                        <div class="stat-icon">�?/div>
                         <div class="stat-value">${vendidas}</div>
                         <div class="stat-description">Vendidas</div>
                     </div>
                     <div class="stat-card-cotizaciones anulada">
-                        <div class="stat-icon">❌</div>
+                        <div class="stat-icon">�?/div>
                         <div class="stat-value">${anuladas}</div>
                         <div class="stat-description">Anuladas</div>
                     </div>
@@ -6038,8 +5622,7 @@ if (!window.jsPDF) {
             await loadParametros();
             await loadClientes();
             await loadProductos();
-            // await loadCotizaciones();
-			await loadCotizacionesFromLocal();
+            await loadCotizaciones();
             
             registerAction('Acceso módulo cotizaciones', 'sistema', 'cotizaciones', 'Usuario accedió al módulo de cotizaciones');
         }
@@ -6133,7 +5716,7 @@ if (!window.jsPDF) {
                             <div class="zona-form">
                                 <input type="text" id="nuevaZonaId" placeholder="ID (ej: zona6)" maxlength="10">
                                 <input type="text" id="nuevaZonaNombre" placeholder="Nombre de la zona" maxlength="100">
-                                <button onclick="addZona()">鉃?Agregar Zona</button>
+                                <button onclick="addZona()">�?Agregar Zona</button>
                             </div>
                             
                             <div id="zonasGrid" class="zonas-grid">
@@ -6157,7 +5740,7 @@ if (!window.jsPDF) {
                                 </div>
                                 
                                 <div class="config-item">
-                                    <h4>🏷️ Validez Cotización</h4>
+                                    <h4>🏷�?Validez Cotización</h4>
                                     <p class="description">Días de validez por defecto para cotizaciones</p>
                                     <input type="number" id="validezCotizacion" min="1" max="365" value="30">
                                 </div>
@@ -6758,7 +6341,7 @@ if (!window.jsPDF) {
                                         <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; 
                                                      background: ${cliente.activo ? '#d1fae5' : '#fee2e2'}; 
                                                      color: ${cliente.activo ? '#065f46' : '#991b1b'};">
-                                            ${cliente.activo ? '✅ Activo' : '❌ Inactivo'}
+                                            ${cliente.activo ? '�?Activo' : '�?Inactivo'}
                                         </span>
                                     </td>
                                     <td>${formatDate(cliente.fecha_creacion)}</td>
@@ -6796,9 +6379,9 @@ if (!window.jsPDF) {
             const valorTotal = productos.reduce((sum, p) => sum + (p.stock_actual * (p.precio_actual || 0)), 0);
             
             function getStockStatus(producto) {
-                if (producto.stock_actual === 0) return { text: '❌ Agotado', color: '#ef4444' };
+                if (producto.stock_actual === 0) return { text: '�?Agotado', color: '#ef4444' };
                 if (producto.stock_actual <= producto.stock_minimo) return { text: '⚠️ Stock Bajo', color: '#f59e0b' };
-                return { text: '✅ Normal', color: '#10b981' };
+                return { text: '�?Normal', color: '#10b981' };
             }
             
             document.getElementById('informeTitle').textContent = '📦 Informe de Productos';
@@ -6853,7 +6436,7 @@ if (!window.jsPDF) {
                                         <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; 
                                                      background: ${producto.activo ? '#d1fae5' : '#fee2e2'}; 
                                                      color: ${producto.activo ? '#065f46' : '#991b1b'};">
-                                            ${producto.activo ? '✅ Activo' : '❌ Inactivo'}
+                                            ${producto.activo ? '�?Activo' : '�?Inactivo'}
                                         </span>
                                     </td>
                                     <td>${formatDate(producto.fecha_hora_creacion)}</td>
@@ -7004,10 +6587,10 @@ if (!window.jsPDF) {
             
             function getEstadoBadge(estado) {
                 const estados = {
-                    'Pendiente': { bg: '#fef3c7', color: '#92400e', icon: '⏳' },
+                    'Pendiente': { bg: '#fef3c7', color: '#92400e', icon: '�? },
                     'Enviada': { bg: '#dbeafe', color: '#1d4ed8', icon: '📧' },
-                    'Vendida': { bg: '#d1fae5', color: '#065f46', icon: '✅' },
-                    'Anulada': { bg: '#fee2e2', color: '#991b1b', icon: '❌' }
+                    'Vendida': { bg: '#d1fae5', color: '#065f46', icon: '�? },
+                    'Anulada': { bg: '#fee2e2', color: '#991b1b', icon: '�? }
                 };
                 const est = estados[estado] || estados['Pendiente'];
                 return `<span style="padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; background: ${est.bg}; color: ${est.color};">${est.icon} ${estado.toUpperCase()}</span>`;
@@ -7101,43 +6684,41 @@ if (!window.jsPDF) {
         // ============================================
         
         async function executeQuery(table, action, data) {
-    try {
-        if (isOnlineStatus && supabase) {
-            let result;
-            
-            switch (action) {
-                case 'select':
-                    result = await supabase.from(table).select(data?.select || '*');
-                    break;
-                case 'insert':
-                    result = await supabase.from(table).insert(data);
-                    break;
-                case 'update':
-                    result = await supabase.from(table).update(data.updates).eq(data.where.column, data.where.value);
-                    break;
-                case 'delete':
-                    result = await supabase.from(table).delete().eq(data.column, data.value);
-                    break;
+            try {
+                if (!isOnlineStatus || !supabase) {
+                    // Guardar para sincronización posterior
+                    await saveOffline(table, { action, data, timestamp: new Date().toISOString() });
+                    return { success: true, offline: true };
+                }
+                
+                let result;
+                
+                switch (action) {
+                    case 'select':
+                        result = await supabase.from(table).select(data.select || '*');
+                        break;
+                    case 'insert':
+                        result = await supabase.from(table).insert(data);
+                        break;
+                    case 'update':
+                        result = await supabase.from(table).update(data.updates).eq(data.where.column, data.where.value);
+                        break;
+                    case 'delete':
+                        result = await supabase.from(table).delete().eq(data.column, data.value);
+                        break;
+                    default:
+                        throw new Error('Acción no válida');
+                }
+                
+                if (result.error) throw result.error;
+                
+                return { success: true, data: result.data };
+                
+            } catch (error) {
+                console.error('Error en executeQuery:', error);
+                throw error;
             }
-            
-            if (result.error) throw result.error;
-            
-            if (action === 'select' && result.data) {
-                await cacheDataLocally(table, result.data);
-            }
-            
-            return { success: true, data: result.data };
-        } else {
-            return await offlineManager.executeOffline(table, action, data);
         }
-    } catch (error) {
-        console.error('Error en executeQuery:', error);
-        if (isOnlineStatus) {
-            return await offlineManager.executeOffline(table, action, data);
-        }
-        throw error;
-    }
-}
         
         async function syncToCloud() {
             if (!isOnlineStatus || !supabase) return false;
@@ -7224,75 +6805,37 @@ if (!window.jsPDF) {
             const year = d.getFullYear();
             return `${day}/${month}/${year}`;
         }
-async function generateConsecutivo() {
+        
+       async function generateConsecutivo() {
     const year = new Date().getFullYear();
     
     try {
         if (isOnlineStatus && supabase) {
-            // Online: usar función PostgreSQL
+            // Usar funci��n PostgreSQL con el par��metro correcto
             const { data, error } = await supabase
-                .rpc('generar_consecutivo_cotizacion', { año_param: year });
+                .rpc('generar_consecutivo_cotizacion', { 'a?o_param': year });
             
             if (error) {
-                console.error('Error en función PostgreSQL:', error);
-                return await generateConsecutivoOffline(year);
+                console.error('Error en funci��n PostgreSQL:', error);
+                // En lugar de retornar ERR, generar consecutivo manual
+                return await generateConsecutivoManual(year);
             }
-            
-            // Guardar en localStorage para tener referencia offline
-            localStorage.setItem(`consecutivo_${year}`, data.split('-')[2]);
             return data;
         } else {
-            // Offline: generar desde IndexedDB
-            return await generateConsecutivoOffline(year);
+            return await generateConsecutivoManual(year);
         }
         
     } catch (error) {
         console.error('Error generando consecutivo:', error);
-        return await generateConsecutivoOffline(year);
+        // En lugar de retornar ERR, generar consecutivo manual
+        return await generateConsecutivoManual(year);
     }
 }
 
-// Nueva función para generar consecutivo offline
-async function generateConsecutivoOffline(year) {
-    try {
-        // Buscar en IndexedDB el último consecutivo del año
-        const cotizaciones = await getOffline('cotizaciones');
-        
-        const cotizacionesDelAño = cotizaciones.filter(c => 
-            c.consecutivo && c.consecutivo.startsWith(`COT-${year}-`)
-        );
-        
-        let maxNumero = 0;
-        
-        cotizacionesDelAño.forEach(c => {
-            const partes = c.consecutivo.split('-');
-            if (partes.length === 3) {
-                const numero = parseInt(partes[2]);
-                if (!isNaN(numero) && numero > maxNumero) {
-                    maxNumero = numero;
-                }
-            }
-        });
-        
-        const siguiente = maxNumero + 1;
-        const consecutivo = `COT-${year}-${String(siguiente).padStart(3, '0')}`;
-        
-        // Guardar en localStorage como respaldo
-        localStorage.setItem(`consecutivo_${year}`, String(siguiente));
-        
-        return consecutivo;
-        
-    } catch (error) {
-        console.error('Error generando consecutivo offline:', error);
-        // Último recurso: usar timestamp
-        const timestamp = Date.now().toString().slice(-6);
-        return `COT-${year}-T${timestamp}`;
-    }
-}
-// Función auxiliar para generar consecutivo manualmente
+// Funci��n auxiliar para generar consecutivo manualmente
 async function generateConsecutivoManual(year) {
     try {
-        // Obtener el último consecutivo real de la base de datos
+        // Obtener el ��ltimo consecutivo real de la base de datos
         const { data: cotizaciones } = await supabase
             .from('cotizaciones')
             .select('consecutivo')
@@ -7312,7 +6855,7 @@ async function generateConsecutivoManual(year) {
         
         // Verificar que no exista el consecutivo
         let attempts = 0;
-        while (attempts < 100) { // Máximo 100 intentos
+        while (attempts < 100) { // M��ximo 100 intentos
             const newConsecutivo = `COT-${year}-${String(nextNumber).padStart(3, '0')}`;
             
             const { data: existing } = await supabase
@@ -7326,7 +6869,7 @@ async function generateConsecutivoManual(year) {
                 await supabase
                     .from('consecutivos')
                     .upsert({
-                        año: year,
+                        a?o: year,
                         tipo: 'cotizacion',
                         ultimo_numero: nextNumber
                     });
@@ -7338,17 +6881,16 @@ async function generateConsecutivoManual(year) {
             attempts++;
         }
         
-        // Si llegamos aquí, algo está muy mal
-        throw new Error('No se pudo generar consecutivo después de 100 intentos');
+        // Si llegamos aqu��, algo est�� muy mal
+        throw new Error('No se pudo generar consecutivo despu��s de 100 intentos');
         
     } catch (error) {
-        console.error('Error en generación manual:', error);
-        // Como último recurso, usar timestamp
+        console.error('Error en generaci��n manual:', error);
+        // Como ��ltimo recurso, usar timestamp
         const timestamp = Date.now().toString().slice(-6);
         return `COT-${year}-T${timestamp}`;
     }
-}
-        
+} 
         function isOnline() {
             return isOnlineStatus;
         }
@@ -7356,48 +6898,32 @@ async function generateConsecutivoManual(year) {
         // ============================================
         // FUNCIONES INDEXEDDB (OFFLINE)
         // ============================================
+        
         async function initIndexedDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open('CotizacionesDB', 2);
-        
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-            db = request.result;
-            console.log('✅ IndexedDB inicializada');
-            resolve(db);
-        };
-        
-        request.onupgradeneeded = (event) => {
-            db = event.target.result;
-            console.log('🔄 Actualizando IndexedDB...');
-            
-            const tables = [
-                { name: 'clientes', keyPath: 'nit' },
-                { name: 'productos', keyPath: 'codigo' },
-                { name: 'entradas', keyPath: 'id', autoIncrement: true },
-                { name: 'cotizaciones', keyPath: 'id_cotizacion', autoIncrement: true },
-                { name: 'cotizacion_detalle', keyPath: 'id', autoIncrement: true },
-                { name: 'parametros', keyPath: 'id' },
-                { name: 'zonas', keyPath: 'id' },
-                { name: 'usuarios', keyPath: 'id', autoIncrement: true },
-                { name: 'consecutivos', keyPath: ['año', 'tipo'] },
-                { name: 'historial', keyPath: 'id', autoIncrement: true },
-                { name: 'sync_pending', keyPath: 'id', autoIncrement: true }
-            ];
-            
-            tables.forEach(table => {
-                if (!db.objectStoreNames.contains(table.name)) {
-                    const store = db.createObjectStore(table.name, { 
-                        keyPath: table.keyPath, 
-                        autoIncrement: table.autoIncrement || false 
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('CotizacionesDB', 1);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    
+                    // Crear stores para cada tabla
+                    const stores = ['clientes', 'productos', 'entradas', 'cotizaciones', 'parametros', 'zonas', 'sync_pending'];
+                    
+                    stores.forEach(storeName => {
+                        if (!db.objectStoreNames.contains(storeName)) {
+                            const store = db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
+                            store.createIndex('timestamp', 'timestamp', { unique: false });
+                        }
                     });
-                    store.createIndex('timestamp', 'timestamp', { unique: false });
-                    console.log(`📦 Tabla creada: ${table.name}`);
-                }
+                };
             });
-        };
-    });
-}
+        }
         
         async function saveOffline(table, data) {
             return new Promise((resolve, reject) => {
@@ -7416,40 +6942,17 @@ async function generateConsecutivoManual(year) {
             });
         }
         
-        async function getOffline(table, filter = null) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([table], 'readonly');
-        const store = transaction.objectStore(table);
-        const request = store.getAll();
-        
-        request.onsuccess = () => {
-            let results = request.result || [];
-            
-            if (filter) {
-                results = results.filter(item => {
-                    return Object.keys(filter).every(key => 
-                        item[key] === filter[key]
-                    );
-                });
-            }
-            
-            results = results.map(item => {
-                const cleaned = { ...item };
-                delete cleaned._offline_created;
-                delete cleaned._offline_modified;
-                delete cleaned._offline_timestamp;
-                delete cleaned._server_synced;
-                delete cleaned._server_timestamp;
-                delete cleaned._cached;
-                delete cleaned._cache_timestamp;
-                return cleaned;
+        async function getOffline(table) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([table], 'readonly');
+                const store = transaction.objectStore(table);
+                const request = store.getAll();
+                
+                request.onsuccess = () => resolve(request.result || []);
+                request.onerror = () => reject(request.error);
             });
-            
-            resolve(results);
-        };
-        request.onerror = () => reject(request.error);
-    });
-} 
+        }
+        
         async function removeFromOfflineSync(id) {
             return new Promise((resolve, reject) => {
                 const transaction = db.transaction(['sync_pending'], 'readwrite');
@@ -7469,53 +6972,35 @@ async function generateConsecutivoManual(year) {
             window.addEventListener('online', handleOnline);
             window.addEventListener('offline', handleOffline);
         }
-        async function handleOnline() {
-    isOnlineStatus = true;
-    updateConnectionStatus();
-    showNotification('Conexión restablecida - Sincronizando...', 'info');
-    await offlineManager.performSync();
-}
-
-function handleOffline() {
-    isOnlineStatus = false;
-    updateConnectionStatus();
-    showNotification('Modo offline - Los datos se sincronizarán cuando haya conexión', 'warning');
-}
-        async function updateConnectionStatus() {
-    const dot = document.getElementById('connectionDot');
-    const status = document.getElementById('connectionStatus');
-    const lastSyncElement = document.getElementById('lastSync');
-    
-    if (isOnlineStatus) {
-        dot.classList.remove('offline');
-        status.textContent = 'En línea';
         
-        // Verificar pendientes
-        try {
-            const pending = await offlineManager.getPendingSync();
+        async function handleOnline() {
+            isOnlineStatus = true;
+            updateConnectionStatus();
+            showNotification('Conexión restablecida', 'success');
             
-            if (pending.length > 0) {
-                lastSyncElement.innerHTML = `${pending.length} cambio${pending.length > 1 ? 's' : ''} pendiente${pending.length > 1 ? 's' : ''}`;
-                lastSyncElement.style.color = '#f59e0b';
-            } else {
-                const lastSyncTime = localStorage.getItem('lastSync');
-                if (lastSyncTime) {
-                    const time = new Date(lastSyncTime).toLocaleTimeString('es-CO', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                    });
-                    lastSyncElement.innerHTML = `Última sincronización: ${time}`;
-                    lastSyncElement.style.color = '#10b981';
-                }
-            }
-        } catch (error) {
-            console.error('Error verificando pendientes:', error);
+            // Intentar sincronización automática
+            await syncToCloud();
+            await syncFromCloud();
         }
-    } else {
-        dot.classList.add('offline');
-        status.textContent = 'Sin conexión';
-    }
-}
+        
+        function handleOffline() {
+            isOnlineStatus = false;
+            updateConnectionStatus();
+            showNotification('Modo offline activado', 'warning');
+        }
+        
+        function updateConnectionStatus() {
+            const dot = document.getElementById('connectionDot');
+            const status = document.getElementById('connectionStatus');
+            
+            if (isOnlineStatus) {
+                dot.classList.remove('offline');
+                status.textContent = 'En línea';
+            } else {
+                dot.classList.add('offline');
+                status.textContent = 'Sin conexión';
+            }
+        }
         
         function updateLastSync() {
             const now = new Date();
@@ -7530,87 +7015,7 @@ function handleOffline() {
         // ============================================
         // FUNCIONES DE SOPORTE
         // ============================================
-
-        // 8. AGREGAR FUNCIÓN PARA VERIFICAR ESTADO DE SINCRONIZACIÓN:
-async function checkPendingSyncStatus() {
-    try {
-        const pending = await offlineManager.getPendingSync();
-        const lastSyncElement = document.getElementById('lastSync');
         
-        if (pending.length > 0) {
-            lastSyncElement.innerHTML = `🔄 ${pending.length} cambio${pending.length > 1 ? 's' : ''} pendiente${pending.length > 1 ? 's' : ''}`;
-            lastSyncElement.style.color = '#f59e0b';
-        } else {
-            const lastSyncTime = localStorage.getItem('lastSync');
-            if (lastSyncTime) {
-                const time = new Date(lastSyncTime).toLocaleTimeString('es-CO', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                lastSyncElement.innerHTML = `✅ Última sincronización: ${time}`;
-                lastSyncElement.style.color = '#10b981';
-            }
-        }
-    } catch (error) {
-        console.error('Error verificando estado de sincronización:', error);
-    }
-}
-
-// 9. AGREGAR FUNCIONES AUXILIARES NECESARIAS:
-async function cacheDataLocally(table, data) {
-    if (!data || !Array.isArray(data)) return;
-    
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([table], 'readwrite');
-        const store = transaction.objectStore(table);
-        
-        let processed = 0;
-        data.forEach(item => {
-            const putRequest = store.put({
-                ...item,
-                _cached: true,
-                _cache_timestamp: new Date().toISOString()
-            });
-            putRequest.onsuccess = () => {
-                processed++;
-                if (processed === data.length) resolve();
-            };
-            putRequest.onerror = () => {
-                processed++;
-                if (processed === data.length) resolve();
-            };
-        });
-        
-        if (data.length === 0) resolve();
-    });
-}
-
-async function initOfflineSystem() {
-    try {
-        await initIndexedDB();
-        setupConnectivityEvents();
-        
-        if (isOnlineStatus && supabase) {
-            await offlineManager.syncFromServer();
-        }
-        
-        // Sincronización periódica cada 5 minutos
-        setInterval(async () => {
-            if (isOnlineStatus && supabase) {
-                console.log('Ejecutando sincronización periódica...');
-                await offlineManager.performSync();
-            }
-        }, 300000); // 5 minutos
-        
-        // Actualizar estado inicial
-        await updateConnectionStatus();
-        
-        console.log('Sistema offline inicializado');
-    } catch (error) {
-        console.error('Error inicializando sistema offline:', error);
-    }
-}
-		
         async function registerAction(action, table, id, detail) {
             try {
                 const logEntry = {
@@ -7695,16 +7100,7 @@ async function initOfflineSystem() {
         // ============================================
         // FUNCIONES EXPORTADAS PARA PR脫XIMOS CHATS
         // ============================================
-        // Función para limpiar cache manualmente (opcional)
-async function clearAppCache() {
-    if ('serviceWorker' in navigator && 'caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(
-            cacheNames.map(name => caches.delete(name))
-        );
-        showNotification('Cache limpiado correctamente', 'success');
-    }
-}
+        
         /*
         LISTA DE FUNCIONES CREADAS PARA CONTINUAR EN PR脫XIMOS CHATS:
 
@@ -7715,12 +7111,12 @@ async function clearAppCache() {
         - registerAction()
 
         NAVEGACI脫N (M脫DULOS A DESARROLLAR):
-        - showClientes()      鈫?Desarrollar primero
-        - showProductos()     鈫?Segundo
-        - showEntradas()      鈫?Tercero
-        - showCotizaciones()  鈫?Cuarto
-        - showParametros()    鈫?Quinto
-        - showInformes()      鈫?Sexto
+        - showClientes()      �?Desarrollar primero
+        - showProductos()     �?Segundo
+        - showEntradas()      �?Tercero
+        - showCotizaciones()  �?Cuarto
+        - showParametros()    �?Quinto
+        - showInformes()      �?Sexto
 
         UTILIDADES SUPABASE:
         - executeQuery()
@@ -7742,25 +7138,7 @@ async function clearAppCache() {
         Para continuar en próximos chats, usar:
         "Desarrollar función showClientes()" (o cualquier función de la lista)
         */
-// Registro del Service Worker
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', async () => {
-        try {
-            const registration = await navigator.serviceWorker.register('./sw.js');
-            console.log('✅ Service Worker registrado:', registration.scope);
-        } catch (error) {
-            console.log('❌ Error registrando Service Worker:', error);
-        }
-    });
-    
-    navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data.type === 'BACKGROUND_SYNC' && offlineManager) {
-            offlineManager.performSync();
-        }
-    });
-}
-		
+        
     </script>
 </body>
 </html>
-
