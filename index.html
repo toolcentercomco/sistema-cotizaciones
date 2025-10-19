@@ -3514,9 +3514,9 @@
                container.innerHTML = filteredProductos.map(producto => {
     const stockStatus = getStockStatus(producto);
     const stockIcon = {
-        normal: '鉁?,
-        bajo: '鈿狅笍',
-        agotado: '鉂?
+        normal: 'N',
+        bajo: 'B',
+        agotado: '!'
     }[stockStatus];
                     
                     return `
@@ -7082,3 +7082,4 @@ if (!window.jsPDF) {
     </script>
 </body>
 </html>
+
