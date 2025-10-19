@@ -6586,10 +6586,10 @@ if (!window.jsPDF) {
             
             function getEstadoBadge(estado) {
                 const estados = {
-                    'Pendiente': { bg: '#fef3c7', color: '#92400e', icon: '�? },
+                    'Pendiente': { bg: '#fef3c7', color: '#92400e', icon: 'P' },
                     'Enviada': { bg: '#dbeafe', color: '#1d4ed8', icon: '[Email]' },
-                    'Vendida': { bg: '#d1fae5', color: '#065f46', icon: '�? },
-                    'Anulada': { bg: '#fee2e2', color: '#991b1b', icon: '�? }
+                    'Vendida': { bg: '#d1fae5', color: '#065f46', icon: 'V' },
+                    'Anulada': { bg: '#fee2e2', color: '#991b1b', icon: 'A' }
                 };
                 const est = estados[estado] || estados['Pendiente'];
                 return `<span style="padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; background: ${est.bg}; color: ${est.color};">${est.icon} ${estado.toUpperCase()}</span>`;
@@ -7141,6 +7141,7 @@ async function generateConsecutivoManual(year) {
     </script>
 </body>
 </html>
+
 
 
 
