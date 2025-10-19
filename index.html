@@ -6868,7 +6868,7 @@ async function generateConsecutivoManual(year) {
                 await supabase
                     .from('consecutivos')
                     .upsert({
-                        a?o: year,
+                        ano: year,
                         tipo: 'cotizacion',
                         ultimo_numero: nextNumber
                     });
@@ -7141,6 +7141,7 @@ async function generateConsecutivoManual(year) {
     </script>
 </body>
 </html>
+
 
 
 
