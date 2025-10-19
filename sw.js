@@ -2,51 +2,45 @@ const CACHE_NAME = 'tool-center-v1.0.0';
 const urlsToCache = [
   './',
   './index.html',
-  './manifest.json'
-];
-
-// URLs que NO deben ser cacheadas
-const EXCLUDED_URLS = [
-  'supabase.co',
-  'supabase.com',
-  'googleapis.com',
-  'gstatic.com'
+  './manifest.json',
+  'https://unpkg.com/@supabase/supabase-js@2',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
 ];
 
 // Instalar Service Worker
 self.addEventListener('install', (event) => {
-  console.log('[SW] Instalando Service Worker...');
+  console.log('🔧 Service Worker: Instalando...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[SW] Cache abierto');
+        console.log('📦 Service Worker: Cache abierto');
         return cache.addAll(urlsToCache);
       })
       .then(() => {
-        console.log('[SW] Instalado correctamente');
+        console.log('✅ Service Worker: Instalado correctamente');
         return self.skipWaiting();
       })
       .catch((error) => {
-        console.error('[SW] Error en instalacion:', error);
+        console.error('❌ Service Worker: Error en instalación:', error);
       })
   );
 });
 
 // Activar Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activando Service Worker...');
+  console.log('🚀 Service Worker: Activando...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Eliminando cache antiguo:', cacheName);
+            console.log('🗑️ Service Worker: Eliminando cache antiguo:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     }).then(() => {
-      console.log('[SW] Activado correctamente');
+      console.log('✅ Service Worker: Activado correctamente');
       return self.clients.claim();
     })
   );
@@ -54,48 +48,54 @@ self.addEventListener('activate', (event) => {
 
 // Interceptar peticiones de red
 self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // NO interceptar peticiones a servicios externos críticos
-  if (EXCLUDED_URLS.some(excludedUrl => url.href.includes(excludedUrl))) {
-    return; // Dejar que la petición pase directamente
-  }
-
   // Solo manejar peticiones GET
-  if (request.method !== 'GET') {
+  if (event.request.method !== 'GET') {
     return;
   }
 
-  // Para archivos locales, usar cache first
-  if (url.origin === location.origin) {
+  // Estrategia: Cache First para recursos estáticos, Network First para APIs
+  if (event.request.url.includes('supabase.co') || 
+      event.request.url.includes('api') ||
+      event.request.url.includes('supabase')) {
+    // Network First para APIs
     event.respondWith(
-      caches.match(request)
+      fetch(event.request)
+        .then((response) => {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+          return response;
+        })
+        .catch(() => {
+          return caches.match(event.request);
+        })
+    );
+  } else {
+    // Cache First para recursos estáticos
+    event.respondWith(
+      caches.match(event.request)
         .then((response) => {
           if (response) {
             return response;
           }
           
-          return fetch(request).then((response) => {
-            // No cachear respuestas con error
-            if (!response || response.status !== 200) {
+          return fetch(event.request).then((response) => {
+            if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
             
-            // Clonar la respuesta
             const responseToCache = response.clone();
-            
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseToCache);
+              cache.put(event.request, responseToCache);
             });
             
             return response;
           });
         })
-        .catch((error) => {
-          console.error('[SW] Error en fetch:', error);
-          // Si es una navegación, devolver index.html del cache
-          if (request.destination === 'document') {
+        .catch(() => {
+          // Fallback para navegación
+          if (event.request.destination === 'document') {
             return caches.match('./index.html');
           }
         })
@@ -108,4 +108,13 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+});
+
+// Mostrar notificación de instalación
+self.addEventListener('install', (event) => {
+  self.registration.showNotification('Tool Center', {
+    body: '¡Aplicación lista para usar offline!',
+    icon: './manifest.json',
+    badge: './manifest.json'
+  });
 });
