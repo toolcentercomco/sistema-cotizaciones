@@ -3513,9 +3513,9 @@
                container.innerHTML = filteredProductos.map(producto => {
     const stockStatus = getStockStatus(producto);
     const stockIcon = {
-        normal: '�?,
+        normal: 'N',
         bajo: '[!]',
-        agotado: '�?
+        agotado: 'A'
     }[stockStatus];
                     
                     return `
@@ -7141,5 +7141,6 @@ async function generateConsecutivoManual(year) {
     </script>
 </body>
 </html>
+
 
 
