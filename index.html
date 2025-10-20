@@ -5610,14 +5610,52 @@ if (!window.jsPDF) {
             }
             
             // Cerrar dropdowns al hacer clic fuera
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.cliente-search')) {
-                    document.getElementById('clientesDropdown').classList.remove('show');
-                }
-                if (!e.target.closest('.productos-search')) {
-                    document.getElementById('productosCotizacionDropdown').classList.remove('show');
-                }
-            });
+            // ✅ Limpiar event listeners previos
+cleanupModuleListeners();
+
+// ✅ Crear nuevos listeners con protección
+window.clienteDropdownClickListener = function(e) {
+    const clienteSearch = document.getElementById('clienteSearchContainer');
+    const clientesDropdown = document.getElementById('clientesDropdown');
+    if (clienteSearch && clientesDropdown && !e.target.closest('.cliente-search')) {
+        clientesDropdown.classList.remove('show');
+    }
+};
+
+window.productoDropdownClickListener = function(e) {
+    const productosSearch = document.querySelector('.productos-search');
+    const productosDropdown = document.getElementById('productosCotizacionDropdown');
+    if (productosSearch && productosDropdown && !e.target.closest('.productos-search')) {
+        productosDropdown.classList.remove('show');
+    }
+};
+
+window.modalCotizacionClickListener = function(e) {
+    const modal = document.getElementById('modalCotizacion');
+    if (modal && e.target === modal) {
+        closeCotizacionModal();
+    }
+};
+
+window.escCotizacionListener = function(e) {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('modalCotizacion');
+        if (modal && modal.classList.contains('show')) {
+            closeCotizacionModal();
+        }
+    }
+};
+
+// ✅ Registrar nuevos listeners
+document.addEventListener('click', window.clienteDropdownClickListener);
+document.addEventListener('click', window.productoDropdownClickListener);
+
+const modalCotizacion = document.getElementById('modalCotizacion');
+if (modalCotizacion) {
+    modalCotizacion.addEventListener('click', window.modalCotizacionClickListener);
+}
+
+document.addEventListener('keydown', window.escCotizacionListener);
             
             // Cerrar modal con ESC
             document.addEventListener('keydown', function(e) {
@@ -7139,4 +7177,5 @@ async function generateConsecutivoManual(year) {
     </script>
 </body>
 </html>
+
 
