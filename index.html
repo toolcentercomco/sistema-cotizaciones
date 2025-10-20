@@ -2416,6 +2416,33 @@
         let currentUser = null;
         let isOnlineStatus = navigator.onLine;
         let db = null; // IndexedDB instance
+		// Variables globales
+let currentUser = null;
+let isOnlineStatus = navigator.onLine;
+let db = null;
+
+// ✅ AGREGAR AQUÍ ESTA FUNCIÓN
+function cleanupModuleListeners() {
+    if (window.clienteDropdownClickListener) {
+        document.removeEventListener('click', window.clienteDropdownClickListener);
+        window.clienteDropdownClickListener = null;
+    }
+    if (window.productoDropdownClickListener) {
+        document.removeEventListener('click', window.productoDropdownClickListener);
+        window.productoDropdownClickListener = null;
+    }
+    if (window.modalCotizacionClickListener) {
+        const modal = document.getElementById('modalCotizacion');
+        if (modal) modal.removeEventListener('click', window.modalCotizacionClickListener);
+        window.modalCotizacionClickListener = null;
+    }
+    if (window.escCotizacionListener) {
+        document.removeEventListener('keydown', window.escCotizacionListener);
+        window.escCotizacionListener = null;
+    }
+}
+
+// Ahora continúa con document.addEventListener('DOMContentLoaded'...
         
         // ============================================
         // INICIALIZACI脫N
@@ -2525,6 +2552,7 @@
         }
         
         function showMenu() {
+			cleanupModuleListeners(); // ✅ AGREGAR ESTA LÍNEA AL INICIO
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
             document.getElementById('menuScreen').style.display = 'block';
@@ -2542,7 +2570,7 @@
             if (isOnlineStatus && currentUser) {
                 registerAction('Logout', 'usuarios', currentUser.id, 'Sesión cerrada');
             }
-            
+            cleanupModuleListeners(); // ✅ AGREGAR ESTA LÍ
             // Limpiar sesión
             localStorage.removeItem('currentUser');
             localStorage.removeItem('loginTime');
@@ -6807,30 +6835,59 @@ if (!window.jsPDF) {
         }
         
         async function generateConsecutivo() {
-            const year = new Date().getFullYear();
+    const year = new Date().getFullYear();
+    
+    try {
+        if (isOnlineStatus && supabase) {
+            const { data, error } = await supabase
+                .rpc('generar_consecutivo_cotizacion', { anio_param: year }); // ✅ CORRECTO
             
-            try {
-                if (isOnlineStatus && supabase) {
-                    // Usar función PostgreSQL
-                    const { data, error } = await supabase
-                        .rpc('generar_consecutivo_cotizacion', { a帽o_param: year });
-                    
-                    if (error) throw error;
-                    return data;
-                } else {
-                    // Generar consecutivo offline
-                    const lastConsec = localStorage.getItem(`consecutivo_${year}`) || '0';
-                    const newConsec = parseInt(lastConsec) + 1;
-                    localStorage.setItem(`consecutivo_${year}`, newConsec.toString());
-                    return `COT-${year}-${String(newConsec).padStart(3, '0')}`;
-                }
-                
-            } catch (error) {
-                console.error('Error generando consecutivo:', error);
-                return `COT-${year}-ERR`;
+            if (error) {
+                console.warn('Error llamando función RPC:', error);
+                return await generateConsecutivoManual(year);
+            }
+            
+            return data;
+        } else {
+            return await generateConsecutivoManual(year);
+        }
+        
+    } catch (error) {
+        console.error('Error generando consecutivo:', error);
+        return await generateConsecutivoManual(year);
+    }
+}
+
+// ✅ AGREGAR ESTA NUEVA FUNCIÓN DESPUÉS
+async function generateConsecutivoManual(year) {
+    try {
+        if (isOnlineStatus && supabase) {
+            const { data, error } = await supabase
+                .from('cotizaciones')
+                .select('consecutivo')
+                .like('consecutivo', `COT-${year}-%`)
+                .order('consecutivo', { ascending: false })
+                .limit(1);
+            
+            if (data && data.length > 0) {
+                const lastConsec = data[0].consecutivo;
+                const lastNumber = parseInt(lastConsec.split('-')[2]) || 0;
+                const newNumber = lastNumber + 1;
+                return `COT-${year}-${String(newNumber).padStart(3, '0')}`;
             }
         }
         
+        const lastConsec = localStorage.getItem(`consecutivo_${year}`) || '0';
+        const newConsec = parseInt(lastConsec) + 1;
+        localStorage.setItem(`consecutivo_${year}`, newConsec.toString());
+        return `COT-${year}-${String(newConsec).padStart(3, '0')}`;
+        
+    } catch (error) {
+        console.error('Error en generación manual:', error);
+        const timestamp = Date.now().toString().slice(-3);
+        return `COT-${year}-T${timestamp}`;
+    }
+}        
         function isOnline() {
             return isOnlineStatus;
         }
